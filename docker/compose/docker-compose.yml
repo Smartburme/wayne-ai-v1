@@ -1,0 +1,113 @@
+version: '3.8'
+
+x-shared-env: &shared-env
+  TZ: Asia/Yangon
+  LANG: en_US.UTF-8
+  LC_ALL: en_US.UTF-8
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        NODE_ENV: development
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./docs:/app/docs
+      - /app/node_modules
+    environment:
+      <<: *shared-env
+      VITE_API_URL: http://backend:5000/api
+      VITE_WS_URL: ws://backend:5000/ws
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./engine:/app/engine
+      - ./docs:/app/docs
+      - /app/node_modules
+    environment:
+      <<: *shared-env
+      NODE_ENV: production
+      REDIS_URL: redis://redis:6379
+      TF_SERVING_URL: http://nlp-engine:8501
+    depends_on:
+      redis:
+        condition: service_healthy
+      nlp-engine:
+        condition: service_started
+
+  nlp-engine:
+    image: tensorflow/serving:2.11.0-gpu
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - ./models:/models
+    environment:
+      <<: *shared-env
+      MODEL_NAME: wayne-mm
+      TF_CPP_MIN_LOG_LEVEL: 2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/v1/models/wayne-mm"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7.2-alpine
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    configs:
+      - source: prometheus
+        target: /etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+      - frontend
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./docker/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+configs:
+  prometheus:
+    file: ./docker/monitoring/prometheus.yml
+
+volumes:
+  redis-data:
+  grafana-data:
+  model-cache:
