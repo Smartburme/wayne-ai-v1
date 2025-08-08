@@ -1,252 +1,134 @@
-import KnowledgeConnector from './knowledge-connector.js';
-import { analyzeSentiment, detectLanguage } from './nlp-utils.js';
+import { marked } from 'marked';
 
 class ResponseGenerator {
-  constructor() {
-    this.connector = new KnowledgeConnector();
-    this.cache = new Map();
-    this.loadKnowledge();
-  }
-
-  async loadKnowledge() {
-    try {
-      await this.connector.loadAllKnowledge();
-      console.log('Knowledge base loaded successfully');
-    } catch (error) {
-      console.error('Failed to load knowledge base:', error);
-      throw new Error('Knowledge initialization failed');
-    }
-  }
-
-  async generateResponse(userInput, context = {}) {
-    if (!userInput || typeof userInput !== 'string') {
-      throw new Error('Invalid input: must be a non-empty string');
+    constructor() {
+        this.templates = {
+            text: {
+                single: (knowledge) => this.formatTextResponse(knowledge),
+                multiple: (knowledgeItems) => this.formatMultipleTextResponse(knowledgeItems)
+            },
+            image: {
+                single: (knowledge) => this.formatImageResponse(knowledge),
+                multiple: (knowledgeItems) => this.formatMultipleImageResponse(knowledgeItems)
+            },
+            code: {
+                single: (knowledge) => this.formatCodeResponse(knowledge),
+                multiple: (knowledgeItems) => this.formatMultipleCodeResponse(knowledgeItems)
+            }
+        };
     }
 
-    // Initialize response structure
-    const response = {
-      text: [],
-      images: [],
-      code: [],
-      metadata: {
-        language: detectLanguage(userInput),
-        sentiment: analyzeSentiment(userInput),
-        timestamp: new Date().toISOString()
-      }
-    };
-
-    try {
-      // Check cache first
-      const cacheKey = this._createCacheKey(userInput, context);
-      if (this.cache.has(cacheKey)) {
-        return this.cache.get(cacheKey);
-      }
-
-      // Analyze input and get resources
-      const { primaryType, secondaryTypes } = this.analyzeInputType(userInput);
-      const resourcePromises = [];
-
-      // Prioritize based on input type
-      resourcePromises.push(
-        this._getResourcesByType(primaryType, userInput, context)
-      );
-
-      // Include secondary types if needed
-      if (context.includeSecondary !== false) {
-        secondaryTypes.forEach(type => {
-          resourcePromises.push(
-            this._getResourcesByType(type, userInput, context)
-          );
-        });
-      }
-
-      // Execute all queries in parallel
-      const results = await Promise.all(resourcePromises);
-
-      // Merge results
-      results.forEach(resources => {
-        if (resources) {
-          response[resources.type] = resources.data;
+    async generate(parsedInput, knowledgeItems) {
+        if (!knowledgeItems || knowledgeItems.length === 0) {
+            return this.generateNoKnowledgeResponse(parsedInput);
         }
-      });
 
-      // Format and cache response
-      const formattedResponse = this.formatResponse(response, userInput);
-      this.cache.set(cacheKey, formattedResponse);
+        const primaryType = this.determinePrimaryType(parsedInput, knowledgeItems);
+        const template = knowledgeItems.length > 1 ? 
+            this.templates[primaryType].multiple : 
+            this.templates[primaryType].single;
 
-      return formattedResponse;
-    } catch (error) {
-      console.error('Error generating response:', error);
-      return this._createErrorResponse(userInput, error);
-    }
-  }
-
-  async _getResourcesByType(type, input, context) {
-    try {
-      let data;
-      switch (type) {
-        case 'text':
-          data = await this.connector.getTextResources(input, context);
-          break;
-        case 'image':
-          data = await this.connector.getImageResources(input, context);
-          break;
-        case 'code':
-          data = await this.connector.getCoderResources(input, context);
-          break;
-        default:
-          return null;
-      }
-      return { type, data };
-    } catch (error) {
-      console.warn(`Failed to get ${type} resources:`, error);
-      return null;
-    }
-  }
-
-  analyzeInputType(input) {
-    const lowerInput = input.toLowerCase();
-    const codingKeywords = ['code', 'program', 'script', 'algorithm', 'function', 'debug'];
-    const imageKeywords = ['image', 'photo', 'picture', 'visual', 'graphic'];
-    const textKeywords = ['text', 'word', 'language', 'meaning', 'define'];
-
-    const codingMatch = codingKeywords.some(kw => lowerInput.includes(kw));
-    const imageMatch = imageKeywords.some(kw => lowerInput.includes(kw));
-    const textMatch = textKeywords.some(kw => lowerInput.includes(kw));
-
-    // Determine primary and secondary types
-    if (codingMatch && !imageMatch && !textMatch) {
-      return { primaryType: 'code', secondaryTypes: [] };
-    }
-    if (imageMatch && !codingMatch && !textMatch) {
-      return { primaryType: 'image', secondaryTypes: [] };
-    }
-    if (textMatch && !codingMatch && !imageMatch) {
-      return { primaryType: 'text', secondaryTypes: [] };
+        return {
+            text: marked.parse(template(knowledgeItems)),
+            code: primaryType === 'code' ? knowledgeItems[0].codeBlocks[0]?.code : null,
+            context: {
+                relatedKnowledge: await this.getRelatedKnowledge(knowledgeItems[0], 
+                knowledgeType: primaryType
+            }
+        };
     }
 
-    // Mixed types - prioritize based on keyword position
-    const types = [];
-    if (codingMatch) types.push('code');
-    if (imageMatch) types.push('image');
-    if (textMatch) types.push('text');
+    async generateImageResponse(analysis, knowledgeItems) {
+        if (!knowledgeItems || knowledgeItems.length === 0) {
+            return {
+                text: marked.parse(this.getNoImageKnowledgeResponse(analysis)),
+                image: null
+            };
+        }
 
-    return {
-      primaryType: types[0] || 'text',
-      secondaryTypes: types.slice(1)
-    };
-  }
+        const response = knowledgeItems.length > 1 ?
+            this.templates.image.multiple(knowledgeItems) :
+            this.templates.image.single(knowledgeItems[0]);
 
-  formatResponse(response, userInput) {
-    // Create markdown sections only for non-empty resource types
-    const sections = [];
-    const { text, images, code, metadata } = response;
-
-    if (text.length > 0) {
-      sections.push(this._formatSection('Text Resources', text));
+        return {
+            text: marked.parse(response),
+            image: null,
+            context: {
+                relatedKnowledge: await this.getRelatedKnowledge(knowledgeItems[0], 
+                knowledgeType: 'image'
+            }
+        };
     }
 
-    if (images.length > 0) {
-      sections.push(this._formatSection('Image Resources', images, true));
+    // Formatting methods
+    formatTextResponse(knowledge) {
+        return `**${knowledge.title}**\n\n${knowledge.content}`;
     }
 
-    if (code.length > 0) {
-      sections.push(this._formatSection('Coding Resources', code));
+    formatMultipleTextResponse(knowledgeItems) {
+        return `အောက်ပါအချက်အလက်များကို တွေ့ရှိပါသည်:\n\n${
+            knowledgeItems.map(k => `- **${k.title}**: ${k.content.slice(0, 100)}...`).join('\n')
+        }\n\nအသေးစိတ်သိလိုပါက တစ်ခုခုကိုရွေးချယ်မေးမြန်းပါ။`;
     }
 
-    // Fallback if no resources found
-    if (sections.length === 0) {
-      return {
-        content: "I couldn't find specific information about your query. Could you please provide more details?",
-        suggestions: this._generateSuggestions(userInput),
-        metadata
-      };
+    formatCodeResponse(knowledge) {
+        const codeBlock = knowledge.codeBlocks?.[0];
+        return `**${knowledge.title}**\n\n${knowledge.content}${
+            codeBlock ? `\n\n\`\`\`${codeBlock.language || ''}\n${codeBlock.code}\n\`\`\`` : ''
+        }`;
     }
 
-    return {
-      content: sections.join('\n\n'),
-      metadata,
-      quickReplies: this._generateQuickReplies(response)
-    };
-  }
-
-  _formatSection(title, items, isImages = false) {
-    let section = `## ${title}\n`;
-    
-    items.forEach((item, index) => {
-      section += `${index + 1}. **${item.name}**\n`;
-      
-      if (isImages) {
-        section += `![${item.name}](${item.thumbnailUrl || item.url})\n`;
-      }
-      
-      if (item.description) {
-        section += `   ${item.description}\n`;
-      }
-      
-      if (item.metadata) {
-        section += `   \`${JSON.stringify(item.metadata)}\`\n`;
-      }
-      
-      if (item.url) {
-        section += `   [View Resource](${item.url})\n\n`;
-      }
-    });
-
-    return section;
-  }
-
-  _generateSuggestions(input) {
-    const suggestions = [
-      "Try rephrasing your question",
-      "Be more specific about what you're looking for",
-      "Check your spelling"
-    ];
-
-    if (input.length < 5) {
-      suggestions.unshift("Your query seems very short - could you elaborate?");
+    formatMultipleCodeResponse(knowledgeItems) {
+        return `ကုဒ်နှင့်သက်ဆိုင်သော အချက်အလက်များ:\n\n${
+            knowledgeItems.map(k => `- **${k.title}**: ${k.content.slice(0, 80)}...`).join('\n')
+        }\n\nအသေးစိတ်ကြည့်ရှုရန် ခေါင်းစဉ်တစ်ခုကိုရွေးချယ်ပါ။`;
     }
 
-    return suggestions;
-  }
-
-  _generateQuickReplies(response) {
-    const quickReplies = [];
-    
-    if (response.text.length > 0) {
-      quickReplies.push({
-        title: 'More text resources',
-        action: 'load_more_text'
-      });
-    }
-    
-    if (response.code.length > 0) {
-      quickReplies.push({
-        title: 'View code examples',
-        action: 'show_code_examples'
-      });
+    formatImageResponse(knowledge) {
+        return `**${knowledge.title}**\n\n${knowledge.content}`;
     }
 
-    return quickReplies.length > 0 ? quickReplies : null;
-  }
+    formatMultipleImageResponse(knowledgeItems) {
+        return `ဓာတ်ပုံနှင့်သက်ဆိုင်သော အချက်အလက်များ:\n\n${
+            knowledgeItems.map(k => `- **${k.title}**: ${k.content.slice(0, 80)}...`).join('\n')
+        }`;
+    }
 
-  _createCacheKey(input, context) {
-    const contextString = JSON.stringify(context);
-    return `${input}-${contextString}`;
-  }
+    // Helper methods
+    determinePrimaryType(parsedInput, knowledgeItems) {
+        if (parsedInput.intent === 'coding_help') return 'code';
+        if (parsedInput.intent === 'image_analysis') return 'image';
+        return knowledgeItems[0].type || 'text';
+    }
 
-  _createErrorResponse(input, error) {
-    return {
-      content: "I'm having trouble processing your request right now. Please try again later.",
-      error: error.message,
-      input,
-      timestamp: new Date().toISOString()
-    };
-  }
+    async getRelatedKnowledge(primaryKnowledge, count = 3) {
+        return knowledgeConnector.getRelatedKnowledge(
+            primaryKnowledge.title, 
+            primaryKnowledge.type, 
+            count
+        );
+    }
 
-  clearCache() {
-    this.cache.clear();
-  }
+    generateNoKnowledgeResponse(parsedInput) {
+        const responses = {
+            coding_help: "ဤကုဒ်ပြဿနာနှင့်ပတ်သက်သော အချက်အလက်များ မတွေ့ရှိသေးပါ။ ပိုမိုရှင်းလင်းစွာ မေးမြန်းပေးပါ။",
+            image_analysis: "ဤဓာတ်ပုံနှင့်ပတ်သက်သော အချက်အလက်များ မတွေ့ရှိသေးပါ။",
+            default: "သင့်မေးခွန်းနှင့်ပတ်သက်သော အချက်အလက်များ မတွေ့ရှိသေးပါ။ အခြားနည်းလမ်းဖြင့် မေးမြန်းကြည့်ပါ။"
+        };
+
+        return {
+            text: responses[parsedInput.intent] || responses.default,
+            code: null
+        };
+    }
+
+    getNoImageKnowledgeResponse(analysis) {
+        return analysis.tags.length > 0 ?
+            `ဤဓာတ်ပုံတွင် ${analysis.tags.join(', ')} များပါဝင်နေပါသည်။ သို့သော် ပိုမိုအထောက်အကူပြုနိုင်ရန် ပိုမိုရှင်းလင်းသော ဓာတ်ပုံတင်ပေးပါ။` :
+            "ဤဓာတ်ပုံနှင့်ပတ်သက်သော အထောက်အကူပြုအချက်အလက်များ မတွေ့ရှိပါ။";
+    }
 }
 
-export default ResponseGenerator;
+// Singleton instance
+const instance = new ResponseGenerator();
+export default instance;
