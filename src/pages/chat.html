@@ -4,56 +4,180 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wayne AI - Chat</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        /* Title Bar Styles */
+        .title-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background-color: rgba(26, 26, 46, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .title-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .title-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+        
+        .title-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .title-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .title-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .title-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .title-bar {
+                padding: 10px 15px;
+            }
+            
+            .title-text {
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
         <!-- Sidebar Menu -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <img src="../images/logo.png" alt="Wayne AI Logo" class="logo">
+                <img src="../../images/logo.png" alt="Wayne AI Logo" class="logo">
                 <h1>Wayne AI</h1>
             </div>
             
             <div class="sidebar-menu">
-                <button class="new-chat-btn">ဆွေးနွေးမှုအသစ်</button>
+                <button class="new-chat-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    ဆွေးနွေးမှုအသစ်
+                </button>
                 
                 <div class="chat-history">
                     <!-- Dynamic content will be added by JavaScript -->
                 </div>
                 
                 <div class="sidebar-footer">
-                    <button class="settings-btn">ဆက်တင်များ</button>
-                    <button class="about-btn">အကြောင်း</button>
+                    <button class="settings-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M19.4 15C19.2669 15.3016 19.227 15.6363 19.2861 15.9606C19.3452 16.2849 19.5003 16.5816 19.7266 16.808C19.953 17.0344 20.2495 17.1895 20.5737 17.2485C20.8979 17.3075 21.2325 17.2675 21.534 17.134L21.65 17.074C21.8602 16.9803 22.0516 16.847 22.213 16.6817C22.3744 16.5164 22.5025 16.3223 22.59 16.11C22.67 15.91 22.71 15.7 22.71 15.49C22.71 15.28 22.67 15.07 22.59 14.87L22.534 14.734C22.4009 14.4324 22.361 14.0977 22.4201 13.7734C22.4792 13.4491 22.6343 13.1524 22.8606 12.926C23.087 12.6996 23.3835 12.5445 23.7077 12.4855C24.0319 12.4265 24.3665 12.4665 24.668 12.6L24.77 12.65C24.98 12.74 25.17 12.87 25.33 13.03C25.49 13.19 25.62 13.39 25.71 13.61C25.8 13.83 25.84 14.06 25.84 14.29C25.84 14.52 25.8 14.75 25.71 14.97L19.4 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2.3 12.6C2.466 12.227 2.7 11.89 3 11.61C3.3 11.33 3.65 11.11 4.04 10.97L4.17 10.92C4.38 10.83 4.61 10.79 4.84 10.79C5.07 10.79 5.3 10.83 5.52 10.92L5.66 10.98C5.96 11.11 6.23 11.3 6.45 11.54C6.67 11.78 6.84 12.06 6.95 12.37L7 12.5C7.04 12.65 7.06 12.8 7.06 12.96C7.06 13.12 7.04 13.28 7 13.43L6.95 13.56C6.84 13.87 6.67 14.15 6.45 14.39C6.23 14.63 5.96 14.82 5.66 14.95L5.55 15C5.34 15.09 5.11 15.13 4.88 15.13C4.65 15.13 4.42 15.09 4.2 15L4.06 14.94C3.67 14.8 3.32 14.58 3.02 14.3C2.72 14.02 2.49 13.68 2.32 13.31L2.26 13.17C2.17 12.96 2.13 12.73 2.13 12.5C2.13 12.27 2.17 12.04 2.26 11.82L2.3 12.6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M17.7 12.6C17.534 12.227 17.3 11.89 17 11.61C16.7 11.33 16.35 11.11 15.96 10.97L15.83 10.92C15.62 10.83 15.39 10.79 15.16 10.79C14.93 10.79 14.7 10.83 14.48 10.92L14.34 10.98C14.04 11.11 13.77 11.3 13.55 11.54C13.33 11.78 13.16 12.06 13.05 12.37L13 12.5C12.96 12.65 12.94 12.8 12.94 12.96C12.94 13.12 12.96 13.28 13 13.43L13.05 13.56C13.16 13.87 13.33 14.15 13.55 14.39C13.77 14.63 14.04 14.82 14.34 14.95L14.45 15C14.66 15.09 14.89 15.13 15.12 15.13C15.35 15.13 15.58 15.09 15.8 15L15.94 14.94C16.33 14.8 16.68 14.58 16.98 14.3C17.28 14.02 17.51 13.68 17.68 13.31L17.74 13.17C17.83 12.96 17.87 12.73 17.87 12.5C17.87 12.27 17.83 12.04 17.74 11.82L17.7 12.6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M4.6 15C4.73314 15.3016 4.773 15.6363 4.71389 15.9606C4.65478 16.2849 4.4997 16.5816 4.27336 16.808C4.04702 17.0344 3.75051 17.1895 3.42627 17.2485C3.10203 17.3075 2.76746 17.2675 2.466 17.134L2.35 17.074C2.13975 16.9803 1.9484 16.847 1.78699 16.6817C1.62558 16.5164 1.49752 16.3223 1.41 16.11C1.33 15.91 1.29 15.7 1.29 15.49C1.29 15.28 1.33 15.07 1.41 14.87L1.466 14.734C1.59914 14.4324 1.639 14.0977 1.57989 13.7734C1.52078 13.4491 1.3657 13.1524 1.13936 12.926C0.913019 12.6996 0.616505 12.5445 0.292268 12.4855C-0.0319696 12.4265 -0.366542 12.4665 -0.668 12.6L-0.77 12.65C-0.98 12.74 -1.17 12.87 -1.33 13.03C-1.49 13.19 -1.62 13.39 -1.71 13.61C-1.8 13.83 -1.84 14.06 -1.84 14.29C-1.84 14.52 -1.8 14.75 -1.71 14.97L4.6 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        ဆက်တင်များ
+                    </button>
+                    <button class="about-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        အကြောင်း
+                    </button>
                 </div>
             </div>
         </aside>
 
         <!-- Main Chat Area -->
-        <main class="chat-container">
-            <div class="chat-messages" id="chat-messages">
-                <!-- Messages will be inserted here -->
+        <div class="main-content">
+            <!-- Title Bar -->
+            <div class="title-bar">
+                <div class="title-bar-left">
+                    <img src="../../images/logo.png" alt="Wayne AI Logo" class="title-logo">
+                    <span class="title-text">Wayne AI Chat</span>
+                </div>
+                <div class="title-actions">
+                    <button class="title-btn" id="sidebar-toggle">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="title-btn" id="refresh-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M23 4V10H17M1 20V14H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3.51 9C4.15839 7.13077 5.38734 5.52475 7.01166 4.47042C8.63598 3.41609 10.5677 2.9705 12.47 3.19944C14.3723 3.42839 16.136 4.31956 17.4321 5.71593C18.7282 7.1123 19.4801 8.93019 19.558 10.8407C19.6359 12.7512 19.0347 14.6238 17.8478 16.1237C16.6608 17.6236 14.9569 18.6574 13.07 19.0513C11.183 19.4452 9.22615 19.1751 7.50301 18.2839C5.77987 17.3927 4.39803 15.9297 3.58 14.13L1 14.13M23 10.19V10.2L22.99 10.21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
             
-            <div class="chat-input-container">
-                <div class="file-upload-container">
-                    <input type="file" id="file-upload" accept="image/*" hidden>
-                    <label for="file-upload" class="upload-btn">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </label>
+            <!-- Chat Container -->
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Messages will be inserted here -->
                 </div>
-                <input type="text" class="chat-input" placeholder="Wayne AI ကိုမေးမြန်းပါ..." id="user-input">
-                <button class="send-btn" id="send-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
+                
+                <div class="chat-input-container">
+                    <div class="file-upload-container">
+                        <input type="file" id="file-upload" accept="image/*" hidden>
+                        <label for="file-upload" class="upload-btn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </label>
+                    </div>
+                    <input type="text" class="chat-input" placeholder="Wayne AI ကိုမေးမြန်းပါ..." id="user-input">
+                    <button class="send-btn" id="send-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
-        </main>
+        </div>
     </div>
 
-    <script src="src/js/script.js"></script>
+    <script src="../../js/script.js"></script>
+    <script>
+        // Toggle sidebar on mobile
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+
+        // Refresh chat
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            if (confirm('ဆွေးနွေးမှုအသစ်တစ်ခုစတင်လိုပါသလား? လက်ရှိဆွေးနွေးမှုပျောက်သွားနိုင်ပါသည်။')) {
+                window.startNewChat();
+            }
+        });
+    </script>
 </body>
-</html>
+                                </html>
