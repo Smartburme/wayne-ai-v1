@@ -9,7 +9,7 @@ wayne-ai/
 │   │   │   ├── logo.png       # Animated SVG logo
 │   │   │   ├── bg-pattern.svg # Dynamic background
 │   │   ├── js/
-│   │   │   ├── script.js      # Chat functionality
+│   │   │   ├── main.js      # Chat functionality
 │   │   │   ├── animations.js  # UI animations
 │   │   │   └── ai-engine.js   # Core AI processing
 │   ├── styles/
