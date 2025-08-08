@@ -1,0 +1,23 @@
+:root {
+    --primary-bg: #1a1a2e;
+    --secondary-bg: #16213e;
+    --accent-color: #0f3460;
+    --text-color: #e94560;
+    --highlight: #f9f9f9;
+}
+
+body {
+    background-color: var(--primary-bg);
+    color: var(--text-color);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.chat-box {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--accent-color);
+}
+
+.message.ai {
+    background-color: var(--accent-color);
+    color: var(--highlight);
+}
