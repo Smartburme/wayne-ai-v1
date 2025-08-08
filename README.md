@@ -1,141 +1,140 @@
-# Wayne AI Power - ပြည့်စုံသော Project Structure
+# Wayne-AI Project Structure Explanation (မြန်မာလို)
 
-## 🏗️ ဖွဲ့စည်းပုံ အပြည့်အစုံ
+## ပရောဂျက်ဖိုင်တွဲများ အကြမ်းဖော်ပြချက်
 
-```
-wayne-ai/
-├── index.html                  # အဓိက ဝင်စာမျက်နှာ (Loader)
-├── public/                     # Static ဖိုင်များ
-│   ├── assets/                 
-│   │   ├── images/             # ရုပ်ပုံများ
-│   │   │   ├── logo.png        # လိုဂို
-│   │   │   └── backgrounds/    # နောက်ခံရုပ်ပုံများ
-│   │   └── fonts/              # ဖောင့်များ
-│   └── mainchat.html           # အဓိက စာပြောစာမျက်နှာ
-└── src/                        # Source Code များ
-    ├── ai/                     # AI နည်းပညာများ
-    │   ├── nlp/                # ဘာသာစကား ဆိုင်ရာ
-    │   ├── vision/             # ရုပ်ပုံ ဆိုင်ရာ
-    │   └── code/               # ကုဒ် ဆိုင်ရာ
-    ├── apps/                   # Feature အလိုက် Module များ
-    │   ├── chat/               # Chatbot
-    │   │   ├── components/     # UI အစိတ်အပိုင်းများ
-    │   │   ├── services/       # Chat ဆာဗစ်များ
-    │   │   └── utils/          # အထောက်အကူဖန်ရှင်များ
-    │   ├── text-gen/           # စာသား ထုတ်လုပ်ခြင်း
-    │   ├── image-gen/          # ရုပ်ပုံ ထုတ်လုပ်ခြင်း
-    │   └── code-gen/           # ကုဒ် ထုတ်လုပ်ခြင်း
-    ├── core/                   # အခြေခံ System များ
-    │   ├── api/                # API ချိတ်ဆက်မှုများ
-    │   ├── config/             # Configuration ဖိုင်များ
-    │   └── utils/              # အထွေထွေ utility များ
-    ├── data/                   # အချက်အလက်များ
-    │   ├── knowledge/          # အသိပညာများ
-    │   │   ├── text/           # စာသား အချက်အလက်
-    │   │   ├── images/         # ရုပ်ပုံ အချက်အလက်
-    │   │   └── code/           # ကုဒ် အချက်အလက်
-    │   └── models/             # AI Model များ
-    └── styles/                 # Design များ
-        ├── themes/             # အရောင်စနစ်များ
-        ├── components/         # Component ဒီဇိုင်းများ
-        └── main.css            # အဓိက style ဖိုင်
-```
+### 1. အဓိက ဖိုင်များ
+- **index.html** - Grok-style အန်နီမယ်ရှင်းပြထားသော loader ပါဝင်သည် (ပထမဆုံးမြင်ရမည့်စာမျက်နှာ)
+- **README.md** - ပရောဂျက်အကြောင်း လမ်းညွှန်ချက်များ
+- **LICENSE** - ဆော့ဖ်ဝဲလိုင်စင်ဖိုင်လ်
 
-## 📁 ဖိုင်တိုင်း၏ အသေးစိတ်
+### 2. src/ ဖိုလ်ဒါအတွင်းရှိအရာများ
 
-1. **public/mainchat.html** (Chat Interface)
+#### 2.1 chatpage.html
+- အဓိက chat interface စာမျက်နှာ
+- သီးသန့်ဒီဇိုင်းနှင့် အပြန်အလှန်ပြောဆိုနိုင်သော UI
+
+#### 2.2 assets/ (အရင်းအမြစ်များ)
+- **images/**
+  - `logo.png` - အန်နီမယ်ရှင်းထားသော SVG လိုဂို
+  - `bg-pattern.svg` - နောက်ခံဒီဇိုင်း
+- **js/**
+  - `script.js` - chat ၏ အဓိက function များ
+  - `animations.js` - UI animation များ
+  - `ai-engine.js` - AI နည်းပညာ core processing
+
+#### 2.3 styles/ (စတိုင်များ)
+- `main.css` - အခြေခံစတိုင်များ
+- `dark-theme.css` - Grok စတိုင်အမှောင် theme
+- `responsive.css` - mobile စက်များအတွက် ချိန်ညှိချက်များ
+
+#### 2.4 docs/ (မှတ်တမ်းများ)
+- **knowledge/**
+  - `text-knowledge.md` - စာသားအချက်အလက်များ
+  - `image-knowledge.md` - ရုပ်ပုံဆိုင်ရာအချက်အလက်များ
+  - `coder-knowledge.md` - ကုဒ်ရေးသားခြင်းဆိုင်ရာအချက်အလက်များ
+
+#### 2.5 engine/ (AI engine)
+- **y-npl/** (ကိုယ်ပိုင် NLP engine)
+  - `parser.py` - စာကြောင်းများကိုဖြေရှင်းခြင်း
+  - `knowledge-connector.js` - အသိပညာများနှင့်ချိတ်ဆက်ခြင်း
+  - `response-generator.js` - အဖြေများထုတ်လုပ်ခြင်း
+
+## Code နမူနာများ
+
+### index.html (Grok-style loader)
 ```html
 <!DOCTYPE html>
-<html lang="my">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Wayne AI - Chat</title>
-    <link rel="stylesheet" href="/styles/main.css">
+    <title>Wayne-AI Loading...</title>
+    <link rel="stylesheet" href="src/styles/main.css">
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            <img src="/assets/images/logo.png" alt="Wayne AI">
-            <h1>Wayne AI Chat</h1>
-        </div>
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input">
-            <input type="text" id="userInput" placeholder="သင့်စကားဝိုင်းကိုရိုက်ထည့်ပါ...">
-            <button id="sendButton">ပို့ရန်</button>
-        </div>
+    <div class="grok-loader">
+        <div class="loader-circle"></div>
+        <div class="loader-text">Initializing Wayne-AI...</div>
     </div>
-    <script src="/src/apps/chat/services/chatService.js"></script>
+    <script src="src/js/animations.js"></script>
 </body>
 </html>
 ```
 
-2. **src/ai/nlp/myanmarProcessor.js**
+### script.js (Chat Functionality)
 ```javascript
-class MyanmarNLP {
-    constructor() {
-        this.tokenizer = new BurmeseTokenizer();
-    }
+// Chat message များကိုလက်ခံခြင်းနှင့်ပြသခြင်း
+document.getElementById('chat-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const userInput = document.getElementById('user-input').value;
+    displayMessage(userInput, 'user');
+    
+    // AI ထံမှအဖြေတောင်းခံရန်
+    getAIResponse(userInput).then(response => {
+        displayMessage(response, 'ai');
+    });
+});
 
-    // မြန်မာစာကြောင်းများကို ခွဲခြားခြင်း
-    segment(text) {
-        return text.split(/(?<=[။၊])/g);
-    }
-
-    // အဓိပ္ပါယ်သတ်မှတ်ခြင်း
-    analyze(text) {
-        const segments = this.segment(text);
-        // NLP လုပ်ငန်းစဉ်များ
-        return {
-            intent: this.detectIntent(segments),
-            entities: this.extractEntities(segments)
-        };
-    }
+function displayMessage(message, sender) {
+    const chatBox = document.getElementById('chat-box');
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message', sender);
+    messageElement.textContent = message;
+    chatBox.appendChild(messageElement);
 }
 ```
 
-3. **src/data/knowledge/text/links.md**
-```markdown
-# စာသားထုတ်လုပ်မှုဆိုင်ရာ အချက်အလက်များ
+### dark-theme.css (Grok-inspired theme)
+```css
+:root {
+    --primary-bg: #1a1a2e;
+    --secondary-bg: #16213e;
+    --accent-color: #0f3460;
+    --text-color: #e94560;
+    --highlight: #f9f9f9;
+}
 
-## အင်္ဂလိပ်စာ
-- [Grammarly](https://www.grammarly.com)
-- [Thesaurus](https://www.thesaurus.com)
+body {
+    background-color: var(--primary-bg);
+    color: var(--text-color);
+    font-family: 'Segoe UI', sans-serif;
+}
 
-## မြန်မာစာ
-- [မြန်မာစာအဖွဲ့](http://myanmarlanguage.org)
-- [Burmese Dictionary](https://www.burmese-dictionary.com)
+.chat-box {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--accent-color);
+}
+
+.message.ai {
+    background-color: var(--accent-color);
+    color: var(--highlight);
+}
 ```
 
-## 🎨 UI Design System
+### parser.py (NLP Engine)
+```python
+import re
+from typing import List, Dict
 
+class TextParser:
+    def __init__(self):
+        self.keywords = {
+            'greeting': ['hello', 'hi', 'hey'],
+            'question': ['what', 'how', 'why']
+        }
+    
+    def parse_input(self, text: str) -> Dict:
+        result = {'intent': 'unknown', 'entities': []}
+        text_lower = text.lower()
+        
+        # Check for greetings
+        if any(word in text_lower for word in self.keywords['greeting']):
+            result['intent'] = 'greeting'
+        
+        # Check for questions
+        elif any(word in text_lower for word in self.keywords['question']):
+            result['intent'] = 'question'
+            result['entities'] = re.findall(r'\b(what|how|why)\b', text_lower)
+        
+        return result
 ```
-styles/
-├── themes/
-│   ├── dark.css      # အမှောင်ဒီဇိုင်း
-│   └── light.css    # အလင်းဒီဇိုင်း
-├── components/
-│   ├── buttons.css   # Button ဒီဇိုင်းများ
-│   ├── inputs.css    # Input field များ
-│   └── cards.css     # Card ဒီဇိုင်းများ
-└── main.css          # အဓိက style ဖိုင်
-```
 
-## 🚀 အားသာချက်များ
-
-1. **လုပ်ဆောင်ချက်အလိုက် သီးသန့်ခွဲထားမှု**
-   - Chatbot, Text Generation, Image Generation, Code Generation တို့ကို သီးသန့် Module များအဖြစ် ဖွဲ့စည်း
-
-2. **မြန်မာဘာသာအတွက် အထူးပြု**
-   - မြန်မာစာ NLP Processor
-   - မြန်မာဖောင့်များ ထည့်သွင်းထား
-   - မြန်မာစာဖြင့် UI ဒီဇိုင်း
-
-3. **ပြုပြင်ထိန်းသိမ်းရန် လွယ်ကူ**
-   - Feature အလိုက် သီးသန့်ဖိုင်များ
-   - ပြောင်းလဲမှုများ လွယ်ကူစွာ ပြုလုပ်နိုင်
-
-4. **အတိုင်းအတာတိုးချဲ့နိုင်မှု**
-   - နည်းပညာအသစ်များ ထည့်သွင်းရန် လွယ်ကူ
-   - Module အသစ်များ ထပ်မံဖြည့်စွက်နိုင်
-
-ဤ project structure သည် Wayne AI Power အား ခေတ်မီသော၊ ထိန်းသိမ်းရလွယ်ကူသော၊ မြန်မာဘာသာစကားအတွက် အထူးပြုထားသော AI platform တစ်ခုအဖြစ် အောင်မြင်စွာ တည်ဆောက်နိုင်ရန် ပြည့်စုံသော ဖွဲ့စည်းပုံဖြစ်ပါသည်။
+မှတ်ချက်: ဤပရောဂျက်သည် AI chat interface တစ်ခုကိုတည်ဆောက်ထားပြီး Grok စတိုင်ဒီဇိုင်းများ၊ custom NLP engine နှင့် အသိပညာစီမံခန့်ခွဲမှုစနစ်များပါဝင်သည်။
