@@ -1,4 +1,34 @@
-# Wayne-AI Project Structure Explanation (မြန်မာလို)
+# Wayne-AI Project Structure Explanation 
+```
+wayne-ai/
+├── index.html                 # Grok-style animated loader
+├── src/
+│   ├── chatpage.html          # Main chat interface
+│   ├── assets/
+│   │   ├── images/
+│   │   │   ├── logo.png       # Animated SVG logo
+│   │   │   ├── bg-pattern.svg # Dynamic background
+│   │   ├── js/
+│   │   │   ├── script.js      # Chat functionality
+│   │   │   ├── animations.js  # UI animations
+│   │   │   └── ai-engine.js   # Core AI processing
+│   ├── styles/
+│   │   ├── main.css           # Base styles
+│   │   ├── dark-theme.css     # Grok-inspired dark theme
+│   │   └── responsive.css     # Mobile adaptations
+│   ├── docs/
+│   │   └── knowledge/
+│   │       ├── text-knowledge.md
+│   │       ├── image-knowledge.md
+│   │       └── coder-knowledge.md
+│   └── engine/
+│       └── y-npl/             # Custom NLP engine
+│           ├── parser.py
+│           ├── knowledge-connector.js
+│           └── response-generator.js
+├── README.md
+└── LICENSE
+```
 
 ## ပရောဂျက်ဖိုင်တွဲများ အကြမ်းဖော်ပြချက်
 
