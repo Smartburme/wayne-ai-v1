@@ -2,38 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wayne-AI Loading...</title>
-    <link rel="stylesheet" href="./src/styles/main.css">
     <style>
-        .grok-loader {
+        /* ===== LOADER ANIMATION ===== */
+        body {
+            background: #121212;
+            color: #00FF88;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        .loader-container {
             text-align: center;
-            margin-top: 20%;
+            animation: fadeIn 0.5s ease-out;
         }
-        .logo {
-            width: 100px;
-            height: 100px;
-            animation: pulse 1.5s infinite;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
+        .logo-spinner {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            animation: spin 2s linear infinite, pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
         @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 0.7; }
-            50% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.7; }
+            0%, 100% { opacity: 0.8; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(0, 255, 136, 0.2);
+            border-radius: 2px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            width: 0%;
+            background: #00FF88;
+            animation: progress 3s linear forwards;
+        }
+
+        @keyframes progress {
+            to { width: 100%; }
+        }
+
+        .status-text {
+            font-size: 14px;
+            margin-top: 10px;
+            opacity: 0.8;
         }
     </style>
 </head>
 <body>
-    <div class="grok-loader">
-        <svg class="logo" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="40" stroke="#00FF00" fill="none"/>
+    <div class="loader-container">
+        <!-- Animated SVG Logo -->
+        <svg class="logo-spinner" viewBox="0 0 100 100">
+            <path d="M50 10 L90 50 L50 90 L10 50 Z" 
+                  stroke="#00FF88" 
+                  stroke-width="8" 
+                  fill="none"
+                  stroke-linejoin="round"/>
         </svg>
-        <p>Initializing Wayne-AI...</p>
+        
+        <h1>Initializing Wayne-AI</h1>
+        
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+        
+        <p class="status-text">Loading neural networks...</p>
     </div>
 
     <script>
-        // 3 စက္ကန့်အကြာမှာ chatpage.html ကိုအလိုအလျောက်ခေါ်မယ်
+        // ===== REDIRECT AFTER 3 SECONDS =====
         setTimeout(() => {
-            window.location.href = "./src/chatpage.html";
-        }, 3000); // 3000 milliseconds = 3 seconds
+            // Add fade-out transition
+            document.querySelector('.loader-container').style.animation = 
+                'fadeIn 0.5s ease-out reverse forwards';
+            
+            // Redirect after animation completes
+            setTimeout(() => {
+                window.location.href = "./src/chatpage.html";
+            }, 500);
+        }, 3000);
+
+        // ===== DYNAMIC LOADING MESSAGES =====
+        const messages = [
+            "Optimizing response engine...",
+            "Connecting to knowledge base...",
+            "Almost there..."
+        ];
+        
+        const statusEl = document.querySelector('.status-text');
+        let counter = 0;
+        
+        setInterval(() => {
+            statusEl.textContent = messages[counter % messages.length];
+            counter++;
+        }, 800);
     </script>
 </body>
 </html>
