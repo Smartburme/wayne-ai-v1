@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // ====== DOM Elements ======
     const chatContainer = document.getElementById('chat-container');
     const userInput = document.getElementById('user-input');
@@ -11,17 +11,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.querySelector('.sidebar');
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const overlay = document.getElementById('overlay');
-    const deviceView = document.getElementById('device-view');
+    const historyList = document.getElementById('history-list');
 
     // ====== State Management ======
-    let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+    let chatHistory = JSON.parse(localStorage.getItem('wayne-ai-chat-history')) || [];
     let currentChatId = null;
     let isMobileView = window.innerWidth <= 768;
     let sidebarOpen = !isMobileView;
+    
+    // Initialize NLP (using Compromise.js as lightweight NLP)
+    const nlp = await initNLP();
+    const knowledgeBase = await loadKnowledge();
 
     // ====== Initialize App ======
     function initApp() {
-        updateDeviceView();
         setupSidebar();
         renderChatHistory();
         
@@ -32,25 +35,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         setupEventListeners();
+        updateMobileView();
     }
 
-    // ====== Device View Detection ======
-    function updateDeviceView() {
-        isMobileView = window.innerWidth <= 768;
-        deviceView.textContent = isMobileView ? 'Mobile View' : 'Desktop View';
-        document.body.classList.toggle('mobile-view', isMobileView);
-        
-        if (isMobileView) {
-            sidebarOpen = false;
-            sidebar.classList.remove('sidebar-open');
-            overlay.classList.remove('active');
-        } else {
-            sidebarOpen = true;
-            sidebar.classList.add('sidebar-open');
+    // ====== NLP Initialization ======
+    async function initNLP() {
+        // Load compromise.js (lightweight NLP)
+        const nlp = await import('https://cdn.jsdelivr.net/npm/compromise@latest/builds/compromise.min.js');
+        return nlp.default;
+    }
+
+    // ====== Knowledge Base Loading ======
+    async function loadKnowledge() {
+        try {
+            const response = await fetch('./src/docs/knowledge/combined-knowledge.json');
+            return await response.json();
+        } catch (error) {
+            console.error("Failed to load knowledge base:", error);
+            return {
+                'coder-knowledge': [],
+                'text-knowledge': [],
+                'general-knowledge': []
+            };
         }
     }
 
-    // ====== Sidebar Logic ======
+    // ====== Sidebar Management ======
     function setupSidebar() {
         if (isMobileView) {
             sidebar.classList.remove('sidebar-open');
@@ -72,9 +82,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // ====== Responsive View Handling ======
+    function updateMobileView() {
+        isMobileView = window.innerWidth <= 768;
+        if (isMobileView) {
+            sidebarOpen = false;
+            sidebar.classList.remove('sidebar-open');
+            overlay.classList.remove('active');
+        } else {
+            sidebarOpen = true;
+            sidebar.classList.add('sidebar-open');
+        }
+    }
+
     // ====== Event Listeners ======
     function setupEventListeners() {
-        // Core functionality
+        // Chat functionality
         sendBtn.addEventListener('click', sendMessage);
         userInput.addEventListener('keydown', handleTextareaInput);
         newChatBtn.addEventListener('click', startNewChat);
@@ -86,10 +109,9 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebarToggle.addEventListener('click', toggleSidebar);
         overlay.addEventListener('click', toggleSidebar);
         
-        // Window resize for responsive design
+        // Window resize with debounce
         window.addEventListener('resize', debounce(() => {
-            updateDeviceView();
-            setupSidebar();
+            updateMobileView();
         }, 200));
     }
 
@@ -105,8 +127,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ====== Chat Functions ======
-    function sendMessage() {
+    // ====== Core Chat Functions ======
+    async function sendMessage() {
         const message = userInput.value.trim();
         if (!message) return;
         
@@ -116,15 +138,80 @@ document.addEventListener('DOMContentLoaded', function() {
         
         showTypingIndicator();
         
-        // Simulate AI response
-        setTimeout(() => {
-            hideTypingIndicator();
-            const aiResponse = generateAIResponse(message);
+        try {
+            // Process with NLP and get AI response
+            const aiResponse = await generateAIResponse(message);
             addMessage('ai', aiResponse);
             saveToHistory(message, aiResponse);
-        }, 1500);
+        } catch (error) {
+            console.error("Error generating response:", error);
+            addMessage('ai', "I encountered an error processing your request. Please try again.");
+        } finally {
+            hideTypingIndicator();
+        }
     }
 
+    async function generateAIResponse(userInput) {
+        // Step 1: NLP Processing
+        const doc = nlp(userInput);
+        const entities = {
+            topics: doc.topics().out('array'),
+            questions: doc.questions().out('array'),
+            verbs: doc.verbs().out('array')
+        };
+
+        // Step 2: Determine intent
+        const intent = determineIntent(entities);
+        
+        // Step 3: Query knowledge base
+        const knowledge = queryKnowledge(intent, entities.topics);
+        
+        // Step 4: Generate natural response
+        return formatResponse(intent, knowledge);
+    }
+
+    function determineIntent(entities) {
+        if (entities.questions.length > 0) {
+            if (entities.topics.some(t => ['code', 'programming', 'algorithm'].includes(t))) {
+                return 'coder-question';
+            }
+            return 'general-question';
+        }
+        if (entities.topics.some(t => ['image', 'photo', 'picture'].includes(t))) {
+            return 'image-request';
+        }
+        return 'general';
+    }
+
+    function queryKnowledge(intent, topics) {
+        switch(intent) {
+            case 'coder-question':
+                return knowledgeBase['coder-knowledge']
+                    .filter(item => topics.some(topic => item.tags.includes(topic)));
+            case 'general-question':
+                return knowledgeBase['text-knowledge']
+                    .filter(item => topics.some(topic => item.tags.includes(topic)));
+            default:
+                return knowledgeBase['general-knowledge'];
+        }
+    }
+
+    function formatResponse(intent, knowledge) {
+        if (knowledge.length === 0) {
+            return "I don't have enough information about that topic. Could you please provide more details?";
+        }
+
+        // Prioritize most relevant knowledge
+        const primaryResponse = knowledge[0].response;
+        
+        if (intent === 'coder-question') {
+            return `For your coding question:\n\`\`\`${knowledge[0].language || ''}\n${primaryResponse}\n\`\`\``;
+        }
+        
+        return primaryResponse;
+    }
+
+    // ====== Message Display Functions ======
     function addMessage(sender, content) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${sender}-message`;
@@ -138,24 +225,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function formatContent(content) {
-        // Simple content formatting (in a real app, use a proper markdown parser)
+        // Simple markdown formatting
         let formatted = content;
         
-        // Detect code blocks
+        // Code blocks
         formatted = formatted.replace(/```(\w*)([\s\S]*?)```/g, 
             '<div class="code-block"><span class="code-language">$1</span><pre>$2</pre></div>');
         
-        // Detect images
-        if (content.startsWith('<img')) {
-            return content; // Already formatted
-        }
-        
-        // Detect URLs
+        // Links
         formatted = formatted.replace(/(https?:\/\/[^\s]+)/g, 
             '<a href="$1" target="_blank" rel="noopener">$1</a>');
+            
+        // Basic formatting
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
         
-        // Paragraphs
-        return `<p>${formatted}</p>`;
+        return formatted;
     }
 
     function formatTime(date) {
@@ -171,6 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
         typingIndicator.style.display = 'none';
     }
 
+    // ====== Chat History Management ======
     function startNewChat() {
         currentChatId = Date.now().toString();
         chatContainer.innerHTML = `
@@ -188,40 +274,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function clearHistory() {
         if (confirm('Are you sure you want to clear all chat history?')) {
             chatHistory = [];
-            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            localStorage.setItem('wayne-ai-chat-history', JSON.stringify(chatHistory));
             renderChatHistory();
             startNewChat();
         }
-    }
-
-    function handleFileUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                addMessage('user', `<img src="${event.target.result}" class="message-image" alt="Uploaded image">`);
-                showTypingIndicator();
-                
-                setTimeout(() => {
-                    hideTypingIndicator();
-                    addMessage('ai', "I've received your image. Here's my analysis...");
-                }, 2000);
-            };
-            reader.readAsDataURL(file);
-        } else {
-            alert('Please upload an image file.');
-        }
-        
-        e.target.value = '';
     }
 
     function saveToHistory(userMessage, aiResponse) {
         const chat = chatHistory.find(c => c.id === currentChatId) || {
             id: currentChatId,
             title: userMessage.slice(0, 30) + (userMessage.length > 30 ? '...' : ''),
-            messages: []
+            messages: [],
+            timestamp: Date.now()
         };
         
         chat.messages.push({
@@ -234,12 +298,11 @@ document.addEventListener('DOMContentLoaded', function() {
             chatHistory.unshift(chat);
         }
         
-        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        localStorage.setItem('wayne-ai-chat-history', JSON.stringify(chatHistory));
         renderChatHistory();
     }
 
     function renderChatHistory() {
-        const historyList = document.getElementById('history-list');
         historyList.innerHTML = '';
         
         chatHistory.forEach(chat => {
@@ -266,16 +329,38 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function generateAIResponse(userMessage) {
-        // In a real app, this would call your AI engine
-        const responses = [
-            `I understand your question about "${userMessage}". Here's what I can tell you...`,
-            "That's an interesting point. Based on my knowledge, I would say...",
-            "I've analyzed your input and here's my response...",
-            "Let me think about that. My perspective is..."
-        ];
+    // ====== File Upload Handling ======
+    async function handleFileUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
         
-        return responses[Math.floor(Math.random() * responses.length)];
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                addMessage('user', `<img src="${event.target.result}" class="message-image" alt="Uploaded image">`);
+                showTypingIndicator();
+                
+                try {
+                    // Simulate image analysis
+                    const analysis = await analyzeImage(event.target.result);
+                    addMessage('ai', analysis);
+                } catch (error) {
+                    addMessage('ai', "I couldn't analyze that image. Please try another one.");
+                } finally {
+                    hideTypingIndicator();
+                }
+            };
+            reader.readAsDataURL(file);
+        } else {
+            alert('Please upload an image file.');
+        }
+        
+        e.target.value = '';
+    }
+
+    async function analyzeImage(imageData) {
+        // In a real app, this would call a computer vision API
+        return "This appears to be an image. For detailed analysis, please provide more context.";
     }
 
     // ====== Utility Functions ======
