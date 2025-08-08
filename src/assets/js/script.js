@@ -1,119 +1,188 @@
-class ChatApp {
-    constructor() {
-        this.chatBox = document.getElementById('chatBox');
-        this.userInput = document.getElementById('userInput');
-        this.sendBtn = document.getElementById('sendBtn');
-        this.aiEngine = new AIEngine();
-        this.messageCount = 0;
-        
-        this.init();
-    }
-
-    init() {
-        this.setupEventListeners();
-        this.autoResizeTextarea();
-    }
-
-    setupEventListeners() {
-        // Send message on button click
-        this.sendBtn.addEventListener('click', () => this.processUserInput());
-        
-        // Send message on Enter key (but allow Shift+Enter for new lines)
-        this.userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                this.processUserInput();
-            }
-        });
-        
-        // Auto-focus input when page loads
-        window.addEventListener('load', () => {
-            this.userInput.focus();
-        });
-    }
-
-    autoResizeTextarea() {
-        this.userInput.addEventListener('input', () => {
-            this.userInput.style.height = 'auto';
-            this.userInput.style.height = `${this.userInput.scrollHeight}px`;
-        });
-    }
-
-    async processUserInput() {
-        const message = this.userInput.value.trim();
-        if (!message) return;
-
-        this.addMessage('user', message);
-        this.userInput.value = '';
-        this.userInput.style.height = 'auto';
-        
-        const typingIndicator = this.showTypingIndicator();
-        try {
-            const response = await this.aiEngine.process(message);
-            this.addMessage('ai', response.text);
-        } catch (error) {
-            this.addMessage('ai', "I'm having trouble connecting. Please try again later.");
-            console.error('Chat Error:', error);
-        } finally {
-            this.removeTypingIndicator(typingIndicator);
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const newChatBtn = document.getElementById('new-chat-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const uploadBtn = document.getElementById('upload-btn');
+    const fileInput = document.getElementById('file-input');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeSettings = document.getElementById('close-settings');
+    
+    // Initialize chat history
+    let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+    let currentChatId = null;
+    
+    // Event Listeners
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    
+    newChatBtn.addEventListener('click', startNewChat);
+    clearBtn.addEventListener('click', clearHistory);
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', handleFileUpload);
+    settingsBtn.addEventListener('click', openSettings);
+    closeSettings.addEventListener('click', closeSettingsModal);
+    
+    // Auto-resize textarea
+    userInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+    
+    // Initialize the app
+    initApp();
+    
+    function initApp() {
+        renderChatHistory();
+        if (chatHistory.length > 0) {
+            loadChat(chatHistory[0].id);
+        } else {
+            startNewChat();
         }
     }
-
-    addMessage(sender, content) {
-        this.messageCount++;
-        const messageId = `msg-${this.messageCount}`;
-        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    function sendMessage() {
+        const message = userInput.value.trim();
+        if (!message) return;
         
+        // Add user message to chat
+        addMessage('user', message);
+        userInput.value = '';
+        userInput.style.height = 'auto';
+        
+        // Show typing indicator
+        showTypingIndicator();
+        
+        // Simulate AI response (in a real app, this would be an API call)
+        setTimeout(() => {
+            hideTypingIndicator();
+            const aiResponse = generateAIResponse(message);
+            addMessage('ai', aiResponse);
+            
+            // Save to history
+            saveToHistory(message, aiResponse);
+        }, 1500);
+    }
+    
+    function addMessage(sender, content) {
         const messageDiv = document.createElement('div');
-        messageDiv.id = messageId;
-        messageDiv.className = `${sender}-message message`;
+        messageDiv.className = `message ${sender}-message`;
+        
+        // Process content for special formats (code, images, etc.)
+        const processedContent = processContent(content);
+        
         messageDiv.innerHTML = `
-            <div class="message-content">${content}</div>
-            <div class="message-timestamp">${timestamp}</div>
+            <div class="message-content">${processedContent}</div>
+            <div class="message-time">${new Date().toLocaleTimeString()}</div>
         `;
         
-        this.chatBox.appendChild(messageDiv);
-        Animator.fadeIn(messageDiv);
-        this.scrollToMessage(messageId);
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
-
-    showTypingIndicator() {
-        const typingId = `typing-${Date.now()}`;
-        const typingDiv = document.createElement('div');
-        typingDiv.id = typingId;
-        typingDiv.className = 'ai-message typing';
-        typingDiv.innerHTML = `
-            <div class="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
+    
+    function processContent(content) {
+        // This function would process the content to detect and format:
+        // 1. Code blocks (markdown)
+        // 2. Images
+        // 3. Text frames
+        // For now, just return as plain text
+        return `<p>${content}</p>`;
+    }
+    
+    function generateAIResponse(userMessage) {
+        // In a real app, this would call your AI engine
+        // This is just a placeholder
+        const responses = [
+            "I understand your question about '" + userMessage + "'. Here's what I can tell you...",
+            "That's an interesting point. Based on my knowledge, I would say...",
+            "I've analyzed your input and here's my response...",
+            "Let me think about that. My perspective is..."
+        ];
+        
+        return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    function showTypingIndicator() {
+        typingIndicator.style.display = 'flex';
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    function hideTypingIndicator() {
+        typingIndicator.style.display = 'none';
+    }
+    
+    function startNewChat() {
+        currentChatId = Date.now().toString();
+        chatContainer.innerHTML = `
+            <div class="welcome-message">
+                <h2>New Chat Started</h2>
+                <p>Ask me anything or upload an image for analysis</p>
             </div>
         `;
-        
-        this.chatBox.appendChild(typingDiv);
-        Animator.createTypingIndicator(typingDiv);
-        this.scrollToMessage(typingId);
-        
-        return typingId;
     }
-
-    removeTypingIndicator(id) {
-        const typingElement = document.getElementById(id);
-        if (typingElement) {
-            typingElement.remove();
+    
+    function clearHistory() {
+        if (confirm('Are you sure you want to clear all chat history?')) {
+            chatHistory = [];
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            renderChatHistory();
+            startNewChat();
         }
     }
-
-    scrollToMessage(id) {
-        const element = document.getElementById(id);
-        if (element) {
-            element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'end'
-            });
+    
+    function handleFileUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (file.type.startsWith('image/')) {
+            // Process image upload
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                addMessage('user', `<img src="${event.target.result}" class="uploaded-image" alt="Uploaded image">`);
+                
+                // Show typing indicator for AI response
+                showTypingIndicator();
+                
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addMessage('ai', "I've received your image. Here's my analysis...");
+                }, 2000);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            alert('Please upload an image file.');
         }
+        
+        // Reset file input
+        e.target.value = '';
     }
-}
-
-// Initialize chat when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => new ChatApp());
+    
+    function saveToHistory(userMessage, aiResponse) {
+        // Implementation would save to localStorage
+    }
+    
+    function renderChatHistory() {
+        // Implementation would render the history list
+    }
+    
+    function loadChat(chatId) {
+        // Implementation would load a chat from history
+    }
+    
+    function openSettings() {
+        settingsModal.style.display = 'flex';
+    }
+    
+    function closeSettingsModal() {
+        settingsModal.style.display = 'none';
+    }
+});
