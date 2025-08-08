@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wayne-AI Chat</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dark-theme.css" id="theme-style">
+</head>
+<body>
+    <header>
+        <img src="assets/images/logo.png" alt="Wayne-AI Logo" class="logo">
+        <h1>Wayne-AI Assistant</h1>
+    </header>
+
+    <main>
+        <div id="chat-box"></div>
+        
+        <form id="chat-form">
+            <input type="text" id="user-input" placeholder="Ask Wayne-AI anything..." autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
+    </main>
+
+    <script type="module">
+        import { AIEngine } from './assets/js/ai-engine.js';
+        import { animateMessage } from './assets/js/animations.js';
+        
+        const ai = new AIEngine();
+        const chatForm = document.getElementById('chat-form');
+        
+        chatForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const userInput = document.getElementById('user-input').value;
+            if (!userInput.trim()) return;
+            
+            // Display user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user';
+            userMessage.textContent = userInput;
+            document.getElementById('chat-box').appendChild(userMessage);
+            animateMessage(userMessage);
+            
+            // Clear input
+            document.getElementById('user-input').value = '';
+            
+            // Get AI response
+            const aiResponse = await ai.processInput(userInput);
+            
+            // Display AI response
+            const aiMessage = document.createElement('div');
+            aiMessage.className = 'message ai';
+            aiMessage.textContent = aiResponse;
+            document.getElementById('chat-box').appendChild(aiMessage);
+            animateMessage(aiMessage);
+            
+            // Scroll to bottom
+            document.getElementById('chat-box').scrollTop = 
+                document.getElementById('chat-box').scrollHeight;
+        });
+    </script>
+</body>
+</html>
