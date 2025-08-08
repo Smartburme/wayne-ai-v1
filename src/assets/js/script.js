@@ -1,67 +1,119 @@
-// ===== DOM ELEMENTS =====
-const chatBox = document.getElementById('chatBox');
-const userInput = document.getElementById('userInput');
-const sendBtn = document.getElementById('sendBtn');
-
-// ===== AUTO-RESIZE TEXTAREA =====
-userInput.addEventListener('input', () => {
-    userInput.style.height = 'auto';
-    userInput.style.height = `${userInput.scrollHeight}px`;
-});
-
-// ===== MESSAGE HANDLING =====
-function addMessage(sender, content) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `${sender}-message`;
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    contentDiv.innerHTML = content;
-    
-    messageDiv.appendChild(contentDiv);
-    chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-// ===== EVENT LISTENERS =====
-sendBtn.addEventListener('click', sendMessage);
-userInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
+class ChatApp {
+    constructor() {
+        this.chatBox = document.getElementById('chatBox');
+        this.userInput = document.getElementById('userInput');
+        this.sendBtn = document.getElementById('sendBtn');
+        this.aiEngine = new AIEngine();
+        this.messageCount = 0;
+        
+        this.init();
     }
-});
 
-// ===== CORE FUNCTION =====
-async function sendMessage() {
-    const message = userInput.value.trim();
-    if (!message) return;
+    init() {
+        this.setupEventListeners();
+        this.autoResizeTextarea();
+    }
 
-    // Add user message
-    addMessage('user', message);
-    userInput.value = '';
-    userInput.style.height = 'auto';
-
-    // Show typing indicator
-    const typingIndicator = document.createElement('div');
-    typingIndicator.className = 'ai-message typing';
-    typingIndicator.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
-    chatBox.appendChild(typingIndicator);
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    // Get AI response
-    try {
-        const response = await fetch('/engine/y-npl/parser.py', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: message })
+    setupEventListeners() {
+        // Send message on button click
+        this.sendBtn.addEventListener('click', () => this.processUserInput());
+        
+        // Send message on Enter key (but allow Shift+Enter for new lines)
+        this.userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.processUserInput();
+            }
         });
         
-        const data = await response.json();
-        chatBox.removeChild(typingIndicator);
-        addMessage('ai', data.text);
-    } catch (error) {
-        chatBox.removeChild(typingIndicator);
-        addMessage('ai', `Error: ${error.message}`);
+        // Auto-focus input when page loads
+        window.addEventListener('load', () => {
+            this.userInput.focus();
+        });
+    }
+
+    autoResizeTextarea() {
+        this.userInput.addEventListener('input', () => {
+            this.userInput.style.height = 'auto';
+            this.userInput.style.height = `${this.userInput.scrollHeight}px`;
+        });
+    }
+
+    async processUserInput() {
+        const message = this.userInput.value.trim();
+        if (!message) return;
+
+        this.addMessage('user', message);
+        this.userInput.value = '';
+        this.userInput.style.height = 'auto';
+        
+        const typingIndicator = this.showTypingIndicator();
+        try {
+            const response = await this.aiEngine.process(message);
+            this.addMessage('ai', response.text);
+        } catch (error) {
+            this.addMessage('ai', "I'm having trouble connecting. Please try again later.");
+            console.error('Chat Error:', error);
+        } finally {
+            this.removeTypingIndicator(typingIndicator);
+        }
+    }
+
+    addMessage(sender, content) {
+        this.messageCount++;
+        const messageId = `msg-${this.messageCount}`;
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.id = messageId;
+        messageDiv.className = `${sender}-message message`;
+        messageDiv.innerHTML = `
+            <div class="message-content">${content}</div>
+            <div class="message-timestamp">${timestamp}</div>
+        `;
+        
+        this.chatBox.appendChild(messageDiv);
+        Animator.fadeIn(messageDiv);
+        this.scrollToMessage(messageId);
+    }
+
+    showTypingIndicator() {
+        const typingId = `typing-${Date.now()}`;
+        const typingDiv = document.createElement('div');
+        typingDiv.id = typingId;
+        typingDiv.className = 'ai-message typing';
+        typingDiv.innerHTML = `
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        `;
+        
+        this.chatBox.appendChild(typingDiv);
+        Animator.createTypingIndicator(typingDiv);
+        this.scrollToMessage(typingId);
+        
+        return typingId;
+    }
+
+    removeTypingIndicator(id) {
+        const typingElement = document.getElementById(id);
+        if (typingElement) {
+            typingElement.remove();
+        }
+    }
+
+    scrollToMessage(id) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'end'
+            });
+        }
     }
 }
+
+// Initialize chat when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => new ChatApp());
