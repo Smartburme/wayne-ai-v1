@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'https://your-worker-url.workers.dev'; // Replace with your Cloudflare Worker URL
+const API_BASE_URL = 'https://wayne-ai-v1.mysvm.workers.dev/'; // Replace with your Cloudflare Worker URL
 let currentChatId = Date.now().toString();
 
 // DOM Elements
