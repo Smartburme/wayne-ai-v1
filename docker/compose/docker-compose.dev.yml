@@ -1,8 +1,0 @@
-# docker/compose/docker-compose.dev.yml
-version: '3.8'
-services:
-  frontend:
-    environment:
-      VITE_DEBUG: "true"
-    ports:
-      - "9229:9229" # Node debug port

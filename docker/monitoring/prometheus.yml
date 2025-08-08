@@ -1,6 +1,0 @@
-# docker/monitoring/prometheus.yml
-scrape_configs:
-  - job_name: 'myanmar-nlp'
-    metrics_path: '/mm-metrics'
-    static_configs:
-      - targets: ['nlp-engine:8501']
