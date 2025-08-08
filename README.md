@@ -1,28 +1,43 @@
 # Wayne-AI Project Structure Explanation 
 ```
 wayne-ai/
-├── index.html                 # Grok-style animated loader
+├── index.html
 ├── src/
-│   ├── chatpage.html          # Main chat interface
+│   ├── chatpage.html
+│   ├── side-menu.html          # Side menu component
+│   ├── about.html              # About modal content
+│   ├── setting.html            # Settings modal content
 │   ├── assets/
 │   │   ├── images/
-│   │   │   ├── logo.png       # Animated SVG logo
-│   │   │   ├── bg-pattern.svg # Dynamic background
+│   │   │   ├── logo.png
+│   │   │   ├── bg-pattern.svg
+│   │   │   ├── icons/         # Added icons directory
+│   │   │   │   ├── mic.svg
+│   │   │   │   ├── send.svg
+│   │   │   │   ├── upload.svg
+│   │   │   │   └── settings.svg
 │   │   ├── js/
-│   │   │   ├── main.js      # Chat functionality
-│   │   │   ├── animations.js  # UI animations
-│   │   │   └── ai-engine.js   # Core AI processing
+│   │   │   ├── main.js
+│   │   │   ├── animations.js
+│   │   │   ├── ai-engine.js
+│   │   │   ├── side-menu.js    # Side menu functionality
+│   │   │   ├── about.js        # About modal interactions
+│   │   │   └── settings.js     # Settings functionality
 │   ├── styles/
-│   │   ├── main.css           # Base styles
-│   │   ├── dark-theme.css     # Grok-inspired dark theme
-│   │   └── responsive.css     # Mobile adaptations
+│   │   ├── main.css
+│   │   ├── dark-theme.css
+│   │   ├── responsive.css
+│   │   └── components/         # Added for component styles
+│   │       ├── side-menu.css
+│   │       ├── about.css
+│   │       └── settings.css
 │   ├── docs/
 │   │   └── knowledge/
 │   │       ├── text-knowledge.md
 │   │       ├── image-knowledge.md
 │   │       └── coder-knowledge.md
 │   └── engine/
-│       └── y-npl/             # Custom NLP engine
+│       └── y-npl/
 │           ├── parser.py
 │           ├── knowledge-connector.js
 │           └── response-generator.js
