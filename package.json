@@ -1,0 +1,73 @@
+{
+  "name": "wayne-ai-v1",
+  "version": "1.0.0",
+  "description": "Advanced AI Assistant for Myanmar with Natural Language Processing capabilities",
+  "private": true,
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "dev": "vite --host",
+    "lint": "eslint . --ext .js,.jsx --fix",
+    "format": "prettier --write .",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "marked": "^5.1.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.1",
+    "zustand": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@types/react": "^18.2.56",
+    "@types/react-dom": "^18.2.19",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^9.0.11",
+    "postcss": "^8.4.35",
+    "prettier": "^3.2.5",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.1.4",
+    "vite-plugin-svgr": "^3.3.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "keywords": [
+    "ai",
+    "myanmar",
+    "chatbot",
+    "natural-language-processing",
+    "assistant"
+  ],
+  "author": "Aung Myo Kyaw (@Buddhamark)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Smartburme/wayne-ai-v1.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Smartburme/wayne-ai-v1/issues"
+  },
+  "homepage": "https://github.com/Smartburme/wayne-ai-v1#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
