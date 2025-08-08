@@ -4,60 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wayne-AI Chat</title>
-    <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/dark-theme.css" id="theme-style">
+    <link rel="stylesheet" href="./styles/main.css">
+    <link rel="stylesheet" href="./styles/dark-theme.css">
 </head>
 <body>
-    <header>
-        <img src="assets/images/logo.png" alt="Wayne-AI Logo" class="logo">
-        <h1>Wayne-AI Assistant</h1>
-    </header>
+    <div class="chat-app">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="logo-container">
+                <img src="./assets/images/logo.png" alt="Wayne-AI" class="logo">
+                <h1>Wayne-AI</h1>
+            </div>
+            <div class="ai-status">
+                <span class="status-indicator active"></span>
+                <span>Online</span>
+            </div>
+        </header>
 
-    <main>
-        <div id="chat-box"></div>
-        
-        <form id="chat-form">
-            <input type="text" id="user-input" placeholder="Ask Wayne-AI anything..." autocomplete="off">
-            <button type="submit">Send</button>
-        </form>
-    </main>
+        <!-- Chat Messages Area -->
+        <div class="chat-container" id="chatBox">
+            <!-- Messages will appear here dynamically -->
+            <div class="welcome-message">
+                <p>Hello! I'm Wayne-AI. How can I help you today?</p>
+            </div>
+        </div>
 
-    <script type="module">
-        import { AIEngine } from './assets/js/ai-engine.js';
-        import { animateMessage } from './assets/js/animations.js';
-        
-        const ai = new AIEngine();
-        const chatForm = document.getElementById('chat-form');
-        
-        chatForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const userInput = document.getElementById('user-input').value;
-            if (!userInput.trim()) return;
-            
-            // Display user message
-            const userMessage = document.createElement('div');
-            userMessage.className = 'message user';
-            userMessage.textContent = userInput;
-            document.getElementById('chat-box').appendChild(userMessage);
-            animateMessage(userMessage);
-            
-            // Clear input
-            document.getElementById('user-input').value = '';
-            
-            // Get AI response
-            const aiResponse = await ai.processInput(userInput);
-            
-            // Display AI response
-            const aiMessage = document.createElement('div');
-            aiMessage.className = 'message ai';
-            aiMessage.textContent = aiResponse;
-            document.getElementById('chat-box').appendChild(aiMessage);
-            animateMessage(aiMessage);
-            
-            // Scroll to bottom
-            document.getElementById('chat-box').scrollTop = 
-                document.getElementById('chat-box').scrollHeight;
-        });
-    </script>
+        <!-- Input Area -->
+        <div class="input-area">
+            <textarea 
+                id="userInput" 
+                placeholder="Ask me anything..." 
+                rows="1"
+                autofocus></textarea>
+            <button id="sendBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="./assets/js/animations.js"></script>
+    <script src="./assets/js/script.js"></script>
+    <script src="./assets/js/ai-engine.js"></script>
 </body>
 </html>
