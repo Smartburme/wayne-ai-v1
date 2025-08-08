@@ -1,0 +1,41 @@
+/* Dark theme variations */
+.dx-os-theme {
+    --primary-color: #7c4dff;
+    --secondary-color: #b388ff;
+    --accent-color: #536dfe;
+    --text-color: #e0e0e0;
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --border-color: #333;
+}
+
+.dx-os-theme .side-menu {
+    background-color: #161616;
+}
+
+.dx-os-theme .top-nav,
+.dx-os-theme .input-area {
+    background-color: #1a1a1a;
+}
+
+.dx-os-theme .message.ai .message-text {
+    background-color: #252525;
+}
+
+.dx-os-theme .settings-panel {
+    background-color: #1a1a1a;
+}
+
+/* Special glow effect for DX OS */
+.dx-os-theme .send-btn {
+    box-shadow: 0 0 10px rgba(124, 77, 255, 0.5);
+}
+
+.dx-os-theme .menu-item.active {
+    background-color: rgba(124, 77, 255, 0.15);
+}
+
+/* Animated border for input when focused */
+.dx-os-theme .text-input textarea:focus {
+    box-shadow: 0 0 0 2px rgba(124, 77, 255, 0.3);
+}
