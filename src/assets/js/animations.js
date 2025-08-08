@@ -1,57 +1,77 @@
-// Logo Animation Controller
-class LogoAnimation {
-  constructor(selector) {
-    this.logo = document.querySelector(selector);
-    this.init();
-  }
+class Animator {
+    /**
+     * Initialize all animations
+     */
+    static init() {
+        this.setupLogoAnimation();
+        this.setupMessageAnimations();
+        this.setupInputAnimations();
+    }
 
-  init() {
-    this.logo.addEventListener('mouseenter', this.startPulse.bind(this));
-    this.logo.addEventListener('mouseleave', this.stopPulse.bind(this));
-  }
+    /**
+     * Logo pulse and rotation animation
+     */
+    static setupLogoAnimation() {
+        const logo = document.querySelector('.logo');
+        if (logo) {
+            logo.style.animation = 'logo-pulse 4s ease-in-out infinite, logo-rotate 8s linear infinite';
+        }
+    }
 
-  startPulse() {
-    this.logo.style.animation = 'logo-pulse 1.5s ease-in-out infinite';
-  }
+    /**
+     * Message entry animations
+     */
+    static setupMessageAnimations() {
+        document.addEventListener('DOMContentLoaded', () => {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach((msg, index) => {
+                msg.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    }
 
-  stopPulse() {
-    this.logo.style.animation = 'none';
-    setTimeout(() => {
-      this.logo.style.animation = 'logo-pulse 4s ease-in-out infinite';
-    }, 50);
-  }
+    /**
+     * Input field animations
+     */
+    static setupInputAnimations() {
+        const textarea = document.getElementById('userInput');
+        if (textarea) {
+            textarea.addEventListener('focus', () => {
+                textarea.parentElement.classList.add('focused');
+            });
+            textarea.addEventListener('blur', () => {
+                textarea.parentElement.classList.remove('focused');
+            });
+        }
+    }
+
+    /**
+     * Fade in element
+     * @param {HTMLElement} element 
+     * @param {number} duration 
+     */
+    static fadeIn(element, duration = 300) {
+        element.style.transition = `opacity ${duration}ms ease-out, transform ${duration}ms ease-out`;
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(10px)';
+        
+        requestAnimationFrame(() => {
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+        });
+    }
+
+    /**
+     * Create typing indicator animation
+     * @param {HTMLElement} container 
+     */
+    static createTypingIndicator(container) {
+        const dots = container.querySelectorAll('.typing-dots span');
+        dots.forEach((dot, index) => {
+            dot.style.animationDelay = `${index * 0.2}s`;
+        });
+    }
 }
 
-// Message Animation Manager
-class MessageAnimator {
-  static fadeIn(element, duration = 300) {
-    element.style.opacity = 0;
-    element.style.transform = 'translateY(10px)';
-    element.style.transition = `all ${duration}ms ease-out`;
-    
-    requestAnimationFrame(() => {
-      element.style.opacity = 1;
-      element.style.transform = 'translateY(0)';
-    });
-  }
-
-  static typingDots(container) {
-    const dots = container.querySelectorAll('.typing-dots span');
-    dots.forEach((dot, index) => {
-      dot.style.animationDelay = `${index * 0.2}s`;
-    });
-  }
-}
-
-// Initialize on DOM load
-document.addEventListener('DOMContentLoaded', () => {
-  new LogoAnimation('.logo');
-  
-  // Animate existing messages
-  document.querySelectorAll('.message').forEach(msg => {
-    MessageAnimator.fadeIn(msg);
-  });
-});
-
-// Export for module usage (if bundled)
-export { LogoAnimation, MessageAnimator };
+// Initialize animations when loaded
+document.addEventListener('DOMContentLoaded', () => Animator.init());
