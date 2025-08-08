@@ -1,0 +1,11 @@
+# docker/compose/docker-compose.prod.yml
+version: '3.8'
+services:
+  frontend:
+    build:
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 3
+  backend:
+    deploy:
+      replicas: 2
