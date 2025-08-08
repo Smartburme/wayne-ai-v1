@@ -1,50 +1,85 @@
+import KnowledgeConnector from './knowledge-connector.js';
+
 class ResponseGenerator {
-  constructor(knowledgeBase) {
-    this.knowledge = knowledgeBase;
-    this.templates = {
-      greeting: "Hello! I'm Wayne-AI. How can I assist you today?",
-      fallback: "I'm not sure about that. Could you rephrase?",
-      error: "An error occurred while processing your request."
-    };
+  constructor() {
+    this.connector = KnowledgeConnector;
+    this.connector.loadAllKnowledge();
   }
 
-  async generateResponse(query, context) {
-    try {
-      // Check for greetings
-      if (this.isGreeting(query)) {
-        return this.formatResponse(this.templates.greeting);
-      }
+  async generateResponse(userInput) {
+    const response = {
+      text: [],
+      images: [],
+      code: []
+    };
 
-      // Check knowledge base
-      const kbResponse = await this.checkKnowledge(query);
-      if (kbResponse) return kbResponse;
+    // Analyze input type
+    const inputType = this.analyzeInputType(userInput);
 
-      // Fallback response
-      return this.formatResponse(this.templates.fallback, {
-        context: this.getContextualHints(context)
-      });
-    } catch (error) {
-      console.error('Response generation error:', error);
-      return this.formatResponse(this.templates.error, { error: true });
+    // Get relevant knowledge
+    if (inputType === 'text') {
+      response.text = await this.connector.getTextResources(userInput);
+    } 
+    else if (inputType === 'image') {
+      response.images = await this.connector.getImageResources(userInput);
     }
+    else if (inputType === 'code') {
+      response.code = await this.connector.getCoderResources(userInput);
+    }
+    else {
+      // Mixed query
+      response.text = await this.connector.getTextResources(userInput);
+      response.images = await this.connector.getImageResources(userInput);
+      response.code = await this.connector.getCoderResources(userInput);
+    }
+
+    return this.formatResponse(response);
   }
 
-  async checkKnowledge(query) {
-    // Implement knowledge base search logic
-    // Returns formatted response if found, null otherwise
+  analyzeInputType(input) {
+    const lowerInput = input.toLowerCase();
+    
+    if (/(image|photo|picture|visual)/.test(lowerInput)) {
+      return 'image';
+    }
+    if (/(code|program|script|algorithm)/.test(lowerInput)) {
+      return 'code';
+    }
+    if (/(text|word|language|meaning)/.test(lowerInput)) {
+      return 'text';
+    }
+    return 'mixed';
   }
 
-  formatResponse(text, metadata = {}) {
-    return {
-      text,
-      timestamp: new Date().toISOString(),
-      source: 'wayne-ai',
-      ...metadata
-    };
-  }
+  formatResponse(response) {
+    let formatted = '';
+    
+    if (response.text.length > 0) {
+      formatted += '## Text Resources\n';
+      response.text.forEach((item, i) => {
+        formatted += `${i+1}. [${item.name}](${item.url})\n`;
+        formatted += `   ${JSON.stringify(item.metadata)}\n\n`;
+      });
+    }
 
-  // ... other helper methods
+    if (response.images.length > 0) {
+      formatted += '## Image Resources\n';
+      response.images.forEach((item, i) => {
+        formatted += `${i+1}. [${item.name}](${item.url})\n`;
+        formatted += `   ${JSON.stringify(item.metadata)}\n\n`;
+      });
+    }
+
+    if (response.code.length > 0) {
+      formatted += '## Coding Resources\n';
+      response.code.forEach((item, i) => {
+        formatted += `${i+1}. [${item.name}](${item.url})\n`;
+        formatted += `   ${JSON.stringify(item.metadata)}\n\n`;
+      });
+    }
+
+    return formatted || 'No relevant knowledge found.';
+  }
 }
 
-// ES Module Export
-export default ResponseGenerator;
+export default new ResponseGenerator();
