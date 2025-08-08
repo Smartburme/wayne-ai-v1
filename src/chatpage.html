@@ -4,8 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wayne-AI Chat</title>
-    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="./styles/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Temporary logo styling until main.css loads */
+        .logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -28,7 +36,7 @@
                     <i class="fas fa-comment"></i> Chat
                 </button>
                 <button class="router-btn" data-section="docs">
-                    <i class="fas fa-book"></i> Documentation
+                    <i class="fas fa-book"></i> Docs
                 </button>
                 <button class="router-btn" data-section="tools">
                     <i class="fas fa-tools"></i> Tools
@@ -54,7 +62,7 @@
             <!-- Right Sidebar Navigation -->
             <div class="sidebar-nav right-nav">
                 <button class="nav-btn" id="theme-btn">
-                    <i class="fas fa-moon"></i> Dark Mode
+                    <i class="fas fa-moon"></i> Theme
                 </button>
                 <button class="nav-btn" id="about-btn">
                     <i class="fas fa-info-circle"></i> About
@@ -109,13 +117,49 @@
                 <button class="close-btn" id="close-settings">&times;</button>
             </div>
             <div class="modal-body">
-                <!-- Settings options will go here -->
+                <div class="setting-option">
+                    <label for="font-size">Font Size</label>
+                    <select id="font-size">
+                        <option value="small">Small</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+                <div class="setting-option">
+                    <label for="language">Language</label>
+                    <select id="language">
+                        <option value="en">English</option>
+                        <option value="my">မြန်မာ</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="../assets/js/main.js"></script>
-    <script src="../assets/js/animations.js"></script>
-    <script src="../assets/js/ai-engine.js"></script>
+    <!-- Mobile Sidebar Toggle -->
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Scripts -->
+    <script src="./assets/js/main.js"></script>
+    <script src="./assets/js/animations.js"></script>
+    <script src="./assets/js/ai-engine.js"></script>
+    <script>
+        // Ensure paths are correct
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('All resources loaded successfully');
+            
+            // Fallback if logo fails to load
+            const logo = document.querySelector('.logo');
+            logo.onerror = function() {
+                this.src = './assets/images/logo-placeholder.png';
+                this.alt = 'Wayne-AI Placeholder Logo';
+            };
+        });
+    </script>
 </body>
-</html>
+    </html>
