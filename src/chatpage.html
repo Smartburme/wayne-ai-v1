@@ -4,14 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wayne-AI Chat</title>
-    <link rel="stylesheet" href="./styles/main.css">
+    <link rel="stylesheet" href="../styles/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Temporary logo styling until main.css loads */
+        /* Temporary styles until CSS loads */
         .logo {
             width: 40px;
             height: 40px;
             object-fit: contain;
+        }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
         }
     </style>
 </head>
@@ -22,7 +26,7 @@
             <!-- Sidebar Header -->
             <div class="sidebar-header" id="sidebar-header">
                 <div class="logo-container">
-                    <img src="./assets/images/logo.png" alt="Wayne-AI Logo" class="logo">
+                    <img src="../assets/images/logo.png" alt="Wayne-AI Logo" class="logo">
                     <h1>Wayne-AI</h1>
                 </div>
                 <button class="settings-btn" id="settings-btn">
@@ -145,21 +149,33 @@
     <div class="overlay" id="overlay"></div>
 
     <!-- Scripts -->
-    <script src="./assets/js/main.js"></script>
-    <script src="./assets/js/animations.js"></script>
-    <script src="./assets/js/ai-engine.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/animations.js"></script>
+    <script src="../assets/js/ai-engine.js"></script>
     <script>
-        // Ensure paths are correct
+        // Verify resources are loading correctly
         document.addEventListener('DOMContentLoaded', function() {
             console.log('All resources loaded successfully');
             
-            // Fallback if logo fails to load
+            // Fallback for logo
             const logo = document.querySelector('.logo');
             logo.onerror = function() {
-                this.src = './assets/images/logo-placeholder.png';
+                this.src = '../assets/images/logo-placeholder.png';
                 this.alt = 'Wayne-AI Placeholder Logo';
+                console.log('Loaded placeholder logo');
             };
+            
+            // Verify CSS loading
+            const stylesheets = Array.from(document.styleSheets);
+            const mainCssLoaded = stylesheets.some(sheet => 
+                sheet.href && sheet.href.includes('main.css'));
+            
+            if (!mainCssLoaded) {
+                console.warn('Main CSS not loaded - applying fallback styles');
+                document.head.insertAdjacentHTML('beforeend', 
+                    '<link rel="stylesheet" href="../styles/main.css">');
+            }
         });
     </script>
 </body>
-    </html>
+</html>
