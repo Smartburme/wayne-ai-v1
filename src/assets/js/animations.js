@@ -1,32 +1,57 @@
-// Grok-style loader animation
-export function initLoader() {
-    const loader = document.querySelector('.grok-loader');
-    const circles = document.querySelectorAll('.loader-circle');
-    
-    let scale = 1;
-    let direction = -0.02;
-    
-    setInterval(() => {
-        scale += direction;
-        if (scale <= 0.8 || scale >= 1.2) {
-            direction *= -1;
-        }
-        
-        circles.forEach(circle => {
-            circle.style.transform = `scale(${scale})`;
-            circle.style.opacity = scale > 1 ? scale - 0.2 : scale;
-        });
+// Logo Animation Controller
+class LogoAnimation {
+  constructor(selector) {
+    this.logo = document.querySelector(selector);
+    this.init();
+  }
+
+  init() {
+    this.logo.addEventListener('mouseenter', this.startPulse.bind(this));
+    this.logo.addEventListener('mouseleave', this.stopPulse.bind(this));
+  }
+
+  startPulse() {
+    this.logo.style.animation = 'logo-pulse 1.5s ease-in-out infinite';
+  }
+
+  stopPulse() {
+    this.logo.style.animation = 'none';
+    setTimeout(() => {
+      this.logo.style.animation = 'logo-pulse 4s ease-in-out infinite';
     }, 50);
+  }
 }
 
-// Chat message entrance animation
-export function animateMessage(element) {
-    element.style.opacity = '0';
-    element.style.transform = 'translateY(20px)';
+// Message Animation Manager
+class MessageAnimator {
+  static fadeIn(element, duration = 300) {
+    element.style.opacity = 0;
+    element.style.transform = 'translateY(10px)';
+    element.style.transition = `all ${duration}ms ease-out`;
     
-    setTimeout(() => {
-        element.style.transition = 'all 0.3s ease-out';
-        element.style.opacity = '1';
-        element.style.transform = 'translateY(0)';
-    }, 10);
+    requestAnimationFrame(() => {
+      element.style.opacity = 1;
+      element.style.transform = 'translateY(0)';
+    });
+  }
+
+  static typingDots(container) {
+    const dots = container.querySelectorAll('.typing-dots span');
+    dots.forEach((dot, index) => {
+      dot.style.animationDelay = `${index * 0.2}s`;
+    });
+  }
 }
+
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+  new LogoAnimation('.logo');
+  
+  // Animate existing messages
+  document.querySelectorAll('.message').forEach(msg => {
+    MessageAnimator.fadeIn(msg);
+  });
+});
+
+// Export for module usage (if bundled)
+export { LogoAnimation, MessageAnimator };
