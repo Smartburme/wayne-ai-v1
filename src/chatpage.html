@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>WAYNE AI - Intelligent Assistant</title>
     
     <!-- Styles -->
@@ -15,6 +15,15 @@
     
     <!-- Favicon -->
     <link rel="icon" href="./assets/images/logo.png" type="image/png">
+    
+    <!-- iOS Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WAYNE AI">
+    
+    <!-- Android Meta Tags -->
+    <meta name="theme-color" content="#121212">
+    <meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
     <div class="app-container">
@@ -27,20 +36,21 @@
         <div class="main-content">
             <!-- Header -->
             <header class="chat-header">
-                <button class="menu-toggle" id="menuToggle">
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
                     <span></span>
                     <span></span>
                     <span></span>
                 </button>
                 
                 <div class="logo-container">
-                    <img src="./assets/images/logo.png" alt="WAYNE AI Logo" class="animated-logo">
+                    <img src="./assets/images/logo.png" alt="WAYNE AI Logo" class="animated-logo" 
+                         style="width: 32px; height: 32px; object-fit: contain;">
                     <h1>WAYNE AI</h1>
                 </div>
                 
                 <div class="header-actions">
-                    <button class="btn-about" id="aboutBtn">About</button>
-                    <button class="btn-settings" id="settingsBtn">
+                    <button class="btn-about" id="aboutBtn" aria-label="About">About</button>
+                    <button class="btn-settings" id="settingsBtn" aria-label="Settings">
                         <i class="icon-settings"></i>
                     </button>
                 </div>
@@ -51,7 +61,8 @@
                 <!-- Initial greeting -->
                 <div class="message ai-message">
                     <div class="message-avatar">
-                        <img src="./assets/images/logo.png" alt="WAYNE AI">
+                        <img src="./assets/images/logo.png" alt="WAYNE AI" 
+                             style="width: 36px; height: 36px; object-fit: contain;">
                     </div>
                     <div class="message-content">
                         <p>Hello, I'm WAYNE. Your artificial intelligence assistant. How can I help you today?</p>
@@ -62,21 +73,22 @@
             <!-- Input Area -->
             <div class="input-container">
                 <div class="file-upload">
-                    <input type="file" id="fileUpload" accept="image/*,.pdf,.txt,.doc,.docx" multiple>
-                    <label for="fileUpload" class="upload-btn">
+                    <input type="file" id="fileUpload" accept="image/*,.pdf,.txt,.doc,.docx" multiple aria-label="Upload files">
+                    <label for="fileUpload" class="upload-btn" aria-label="Upload">
                         <i class="icon-upload"></i>
                     </label>
                 </div>
                 
                 <div class="text-input">
-                    <textarea id="userInput" placeholder="Ask WAYNE anything..." rows="1"></textarea>
-                    <button id="sendButton" class="send-btn">
+                    <textarea id="userInput" placeholder="Ask WAYNE anything..." rows="1" 
+                              aria-label="Type your message"></textarea>
+                    <button id="sendButton" class="send-btn" aria-label="Send message">
                         <i class="icon-send"></i>
                     </button>
                 </div>
                 
                 <div class="microphone">
-                    <button id="voiceButton" class="voice-btn">
+                    <button id="voiceButton" class="voice-btn" aria-label="Voice input">
                         <i class="icon-mic"></i>
                     </button>
                 </div>
@@ -84,12 +96,12 @@
         </div>
         
         <!-- About Modal -->
-        <div class="modal" id="aboutModal">
+        <div class="modal" id="aboutModal" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle">
             <!-- Dynamically loaded from about.html -->
         </div>
         
         <!-- Settings Modal -->
-        <div class="modal" id="settingsModal">
+        <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
             <!-- Dynamically loaded from settings.html -->
         </div>
     </div>
@@ -106,23 +118,39 @@
         // Initialize components when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             // Load external components
-            fetch('./side-menu.html')
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('sideMenu').innerHTML = data;
-                });
+            const loadComponents = async () => {
+                try {
+                    const [menuRes, aboutRes, settingsRes] = await Promise.all([
+                        fetch('./side-menu.html'),
+                        fetch('./about.html'),
+                        fetch('./setting.html')
+                    ]);
+                    
+                    const [menuData, aboutData, settingsData] = await Promise.all([
+                        menuRes.text(),
+                        aboutRes.text(),
+                        settingsRes.text()
+                    ]);
+                    
+                    document.getElementById('sideMenu').innerHTML = menuData;
+                    document.getElementById('aboutModal').innerHTML = aboutData;
+                    document.getElementById('settingsModal').innerHTML = settingsData;
+                    
+                    // Initialize mobile viewport height
+                    setViewportHeight();
+                    window.addEventListener('resize', setViewportHeight);
+                } catch (error) {
+                    console.error('Error loading components:', error);
+                }
+            };
             
-            fetch('./about.html')
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('aboutModal').innerHTML = data;
-                });
+            // Mobile viewport height fix
+            function setViewportHeight() {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }
             
-            fetch('./setting.html')
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('settingsModal').innerHTML = data;
-                });
+            loadComponents();
         });
     </script>
 </body>
