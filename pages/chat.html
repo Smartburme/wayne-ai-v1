@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wayne AI - Chat</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Menu -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../../images/logo.png" alt="Wayne AI Logo" class="logo">
+                <h1>Wayne AI</h1>
+            </div>
+            
+            <div class="sidebar-menu">
+                <button class="new-chat-btn">ဆွေးနွေးမှုအသစ်</button>
+                
+                <div class="chat-history">
+                    <!-- Dynamic content will be added by JavaScript -->
+                </div>
+                
+                <div class="sidebar-footer">
+                    <button class="settings-btn">ဆက်တင်များ</button>
+                    <button class="about-btn">အကြောင်း</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be inserted here -->
+            </div>
+            
+            <div class="chat-input-container">
+                <div class="file-upload-container">
+                    <input type="file" id="file-upload" accept="image/*" hidden>
+                    <label for="file-upload" class="upload-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </label>
+                </div>
+                <input type="text" class="chat-input" placeholder="Wayne AI ကိုမေးမြန်းပါ..." id="user-input">
+                <button class="send-btn" id="send-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../js/script.js"></script>
+</body>
+</html>
