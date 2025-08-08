@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Wayne AI</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .about-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: white;
+        }
+        
+        .about-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .about-header img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+        
+        .about-content {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .about-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #4cc9f0;
+        }
+        
+        .about-version {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 20px;
+        }
+        
+        .about-description {
+            margin-bottom: 20px;
+        }
+        
+        .developer-info {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .developer-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #4cc9f0;
+        }
+        
+        .contact-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .contact-list li {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .contact-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="about-container">
+            <div class="about-header">
+                <img src="../../images/logo.png" alt="Wayne AI Logo">
+                <div>
+                    <h1 class="about-title">Wayne AI</h1>
+                    <div class="about-version">Version 1.0.0</div>
+                </div>
+            </div>
+            
+            <div class="about-content">
+                <div class="about-description">
+                    <p>Wayne AI is an advanced artificial intelligence assistant designed specifically for Myanmar users. It combines natural language processing with local knowledge to provide helpful, contextual responses in both Burmese and English.</p>
+                    <p>The system is built using cutting-edge AI technologies and is continuously learning to better serve user needs.</p>
+                </div>
+                
+                <div class="developer-info">
+                    <h3 class="developer-title">Developer Information</h3>
+                    <ul class="contact-list">
+                        <li>
+                            <span class="contact-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </span>
+                            <span>Aung Myo Kyaw</span>
+                        </li>
+                        <li>
+                            <span class="contact-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M22 16.92V19C22 20.1046 21.1046 21 20 21H4C2.89543 21 2 20.1046 2 19V16.92M22 16.92C22 16.92 18 14.92 12 16.92C6 14.92 2 16.92 2 16.92M22 16.92V7C22 5.89543 21.1046 5 20 5H14M2 16.92V7C2 5.89543 2.89543 5 4 5H10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M14 5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5C10 6.10457 10.8954 7 12 7C13.1046 7 14 6.10457 14 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <span>@Buddhamark (TikTok)</span>
+                        </li>
+                        <li>
+                            <span class="contact-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 5C3 3.89543 3.89543 3 5 3H8.27924C8.70967 3 9.09181 3.27543 9.22792 3.68377L10.7257 8.17721C10.8831 8.64932 10.6694 9.16531 10.2243 9.38787L7.96701 10.5165C9.06925 12.9612 11.0388 14.9308 13.4835 16.033L14.6121 13.7757C14.8347 13.3306 15.3507 13.1169 15.8228 13.2743L20.3162 14.7721C20.7246 14.9082 21 15.2903 21 15.7208V19C21 20.1046 20.1046 21 19 21H18C9.71573 21 3 14.2843 3 6V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <span>09677740154</span>
+                        </li>
+                        <li>
+                            <span class="contact-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 7L10.94 11.3375C11.5885 11.7428 12.4115 11.7428 13.06 11.3375L20 7M5 18H19C20.1046 18 21 17.1046 21 16V8C21 6.89543 20.1046 6 19 6H5C3.89543 6 3 6.89543 3 8V16C3 17.1046 3.89543 18 5 18Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <span>wayne.mm.92@gmail.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <button class="back-btn" id="back-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Back to Chat
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('back-btn').addEventListener('click', function() {
+            window.location.href = 'chat.html';
+        });
+    </script>
+</body>
+  </html>
