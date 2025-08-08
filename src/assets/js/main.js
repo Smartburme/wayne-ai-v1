@@ -1,556 +1,282 @@
-// WAYNE AI - Main Application Controller
-document.addEventListener('DOMContentLoaded', () => {
-    // DOM Elements
-    const chatContainer = document.getElementById('chatContainer');
-    const userInput = document.getElementById('userInput');
-    const sendButton = document.getElementById('sendButton');
-    const voiceButton = document.getElementById('voiceButton');
-    const fileUpload = document.getElementById('fileUpload');
+// DOM Elements
+const sideMenu = document.getElementById('sideMenu');
+const mainContent = document.getElementById('mainContent');
+const menuToggle = document.getElementById('menuToggle');
+const chatContainer = document.getElementById('chatContainer');
+const messageInput = document.getElementById('messageInput');
+const sendMessageBtn = document.getElementById('sendMessageBtn');
+const imageUploadBtn = document.getElementById('imageUploadBtn');
+const imageUpload = document.getElementById('imageUpload');
+const imagePreviewModal = document.getElementById('imagePreviewModal');
+const previewImage = document.getElementById('previewImage');
+const sendImageBtn = document.getElementById('sendImageBtn');
+const settingsPanel = document.getElementById('settingsPanel');
+const closeSettings = document.getElementById('closeSettings');
+const themeSelect = document.getElementById('themeSelect');
+const fontSize = document.getElementById('fontSize');
+const animationsToggle = document.getElementById('animationsToggle');
+const notificationToggle = document.getElementById('notificationToggle');
+
+// State variables
+let isMenuOpen = false;
+let currentChatId = generateChatId();
+let uploadedImage = null;
+
+// Initialize the app
+function init() {
+    setupEventListeners();
+    loadSettings();
+    checkMobileView();
+}
+
+// Set up event listeners
+function setupEventListeners() {
+    // Menu toggle
+    menuToggle.addEventListener('click', toggleMenu);
     
-    // State Management
-    let currentMode = 'general'; // Modes: general, text, image, code
-    let conversationHistory = [];
-    let isProcessing = false;
-    
-    // Initialize components
-    initEventListeners();
-    loadInitialState();
-    
-    // ===== CORE FUNCTIONS =====
-    
-    function initEventListeners() {
-        // Send message on button click or Enter key
-        sendButton.addEventListener('click', handleSendMessage);
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-            }
-        });
-        
-        // Voice input
-        voiceButton.addEventListener('click', handleVoiceInput);
-        
-        // File upload handling
-        fileUpload.addEventListener('change', handleFileUpload);
-        
-        // Mode detection based on input
-        userInput.addEventListener('input', detectInputMode);
-    }
-    
-    function loadInitialState() {
-        // Load any saved conversation history
-        const savedHistory = localStorage.getItem('wayneConversationHistory');
-        if (savedHistory) {
-            conversationHistory = JSON.parse(savedHistory);
-            renderConversationHistory();
+    // Click outside to close menu
+    document.addEventListener('click', (e) => {
+        if (isMenuOpen && !sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+            closeMenu();
         }
+    });
+    
+    // Send message
+    sendMessageBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    
+    // Image upload
+    imageUploadBtn.addEventListener('click', () => imageUpload.click());
+    imageUpload.addEventListener('change', handleImageUpload);
+    sendImageBtn.addEventListener('click', sendImageMessage);
+    
+    // Settings
+    document.querySelector('.menu-item[data-section="settings"]').addEventListener('click', openSettings);
+    closeSettings.addEventListener('click', closeSettingsPanel);
+    
+    // Theme selector
+    themeSelect.addEventListener('change', changeTheme);
+    
+    // Font size
+    fontSize.addEventListener('input', updateFontSize);
+    
+    // Animations toggle
+    animationsToggle.addEventListener('change', toggleAnimations);
+    
+    // Notifications toggle
+    notificationToggle.addEventListener('change', toggleNotifications);
+    
+    // Window resize
+    window.addEventListener('resize', checkMobileView);
+}
+
+// Menu functions
+function toggleMenu() {
+    if (isMenuOpen) {
+        closeMenu();
+    } else {
+        openMenu();
     }
-    
-    // ===== MESSAGE HANDLING =====
-    
-    async function handleSendMessage() {
-        const message = userInput.value.trim();
-        if (!message || isProcessing) return;
-        
-        // Add user message to UI
+}
+
+function openMenu() {
+    sideMenu.classList.add('open');
+    mainContent.classList.add('menu-open');
+    isMenuOpen = true;
+}
+
+function closeMenu() {
+    sideMenu.classList.remove('open');
+    mainContent.classList.remove('menu-open');
+    isMenuOpen = false;
+}
+
+// Chat functions
+function sendMessage() {
+    const message = messageInput.value.trim();
+    if (message) {
         addMessageToChat('user', message);
-        userInput.value = '';
+        messageInput.value = '';
         
-        // Process the message
-        await processUserMessage(message);
-    }
-    
-    function addMessageToChat(sender, content, metadata = {}) {
-        const messageId = Date.now();
-        const message = {
-            id: messageId,
-            sender,
-            content,
-            timestamp: new Date().toISOString(),
-            metadata
-        };
-        
-        conversationHistory.push(message);
-        saveConversation();
-        renderMessage(message);
-    }
-    
-    function renderMessage(message) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${message.sender}-message`;
-        messageDiv.dataset.messageId = message.id;
-        
-        // Avatar
-        const avatarDiv = document.createElement('div');
-        avatarDiv.className = 'message-avatar';
-        if (message.sender === 'user') {
-            avatarDiv.innerHTML = '<i class="icon-user"></i>';
-        } else {
-            const logoImg = document.createElement('img');
-            logoImg.src = './assets/images/logo.png';
-            logoImg.alt = 'WAYNE AI';
-            avatarDiv.appendChild(logoImg);
-        }
-        
-        // Content
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        
-        // Handle different content types
-        if (message.metadata.type === 'code') {
-            const pre = document.createElement('pre');
-            const code = document.createElement('code');
-            code.textContent = message.content;
-            code.className = `language-${message.metadata.language || 'javascript'}`;
-            pre.appendChild(code);
-            contentDiv.appendChild(pre);
-            
-            // Add copy button
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'copy-btn';
-            copyBtn.innerHTML = '<i class="icon-copy"></i>';
-            copyBtn.title = 'Copy to clipboard';
-            copyBtn.addEventListener('click', () => copyToClipboard(message.content));
-            contentDiv.appendChild(copyBtn);
-            
-            // Highlight the code
-            if (window.Prism) {
-                Prism.highlightElement(code);
-            }
-        } else if (message.metadata.type === 'image') {
-            const imgContainer = document.createElement('div');
-            imgContainer.className = 'image-result';
-            
-            if (typeof message.content === 'string' && message.content.startsWith('http')) {
-                const img = document.createElement('img');
-                img.src = message.content;
-                img.alt = 'Generated image';
-                imgContainer.appendChild(img);
-            } else if (message.content instanceof Blob) {
-                const imgUrl = URL.createObjectURL(message.content);
-                const img = document.createElement('img');
-                img.src = imgUrl;
-                img.alt = 'Uploaded image';
-                imgContainer.appendChild(img);
-            }
-            
-            contentDiv.appendChild(imgContainer);
-        } else {
-            // Regular text message
-            const paragraphs = message.content.split('\n');
-            paragraphs.forEach(p => {
-                const pElem = document.createElement('p');
-                pElem.textContent = p;
-                contentDiv.appendChild(pElem);
-            });
-        }
-        
-        // Action buttons
-        if (message.sender === 'ai') {
-            const actionDiv = document.createElement('div');
-            actionDiv.className = 'message-actions';
-            
-            const likeBtn = document.createElement('button');
-            likeBtn.className = 'like-btn';
-            likeBtn.innerHTML = '<i class="icon-thumbs-up"></i>';
-            likeBtn.addEventListener('click', () => rateResponse(message.id, 'like'));
-            
-            const dislikeBtn = document.createElement('button');
-            dislikeBtn.className = 'dislike-btn';
-            dislikeBtn.innerHTML = '<i class="icon-thumbs-down"></i>';
-            dislikeBtn.addEventListener('click', () => rateResponse(message.id, 'dislike'));
-            
-            actionDiv.appendChild(likeBtn);
-            actionDiv.appendChild(dislikeBtn);
-            contentDiv.appendChild(actionDiv);
-        }
-        
-        messageDiv.appendChild(avatarDiv);
-        messageDiv.appendChild(contentDiv);
-        
-        chatContainer.appendChild(messageDiv);
-        messageDiv.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    // ===== PROCESSING ENGINE =====
-    
-    async function processUserMessage(message) {
-        isProcessing = true;
-        showTypingIndicator();
-        
-        try {
-            let response;
-            
-            // Determine processing mode
-            if (currentMode === 'code') {
-                response = await processCodeRequest(message);
-            } else if (currentMode === 'image') {
-                response = await processImageRequest(message);
-            } else {
-                response = await processTextRequest(message);
-            }
-            
-            // Add AI response to chat
-            addMessageToChat('ai', response.content, response.metadata);
-        } catch (error) {
-            console.error('Processing error:', error);
-            addMessageToChat('ai', "I encountered an error processing your request. Please try again.", {
-                type: 'error'
-            });
-        } finally {
-            hideTypingIndicator();
-            isProcessing = false;
-        }
-    }
-    
-    async function processTextRequest(message) {
-        // Connect to knowledge base and NLP engine
-        const response = await fetch('/engine/y-npl/knowledge-connector.js', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                query: message,
-                context: conversationHistory,
-                knowledgeSources: ['text-knowledge.md', 'coder-knowledge.md']
-            })
-        });
-        
-        const data = await response.json();
-        
-        return {
-            content: data.response,
-            metadata: {
-                type: 'text',
-                sources: data.sources || [],
-                confidence: data.confidence || 0.8
-            }
-        };
-    }
-    
-    async function processCodeRequest(message) {
-        // Check if it's a code execution request
-        const executePattern = /^(run|execute):/i;
-        const shouldExecute = executePattern.test(message);
-        
-        if (shouldExecute) {
-            message = message.replace(executePattern, '').trim();
-            
-            // Send to code execution engine
-            const response = await fetch('/engine/y-npl/response-generator.js', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    type: 'code_execution',
-                    code: message,
-                    language: detectProgrammingLanguage(message)
-                })
-            });
-            
-            const result = await response.json();
-            
-            return {
-                content: result.output || "Code executed but produced no output.",
-                metadata: {
-                    type: 'code',
-                    language: result.language || 'text',
-                    executionTime: result.executionTime,
-                    success: result.success
-                }
-            };
-        } else {
-            // Regular code generation/explanation
-            const response = await fetch('/engine/y-npl/response-generator.js', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    type: 'code_generation',
-                    prompt: message,
-                    context: getCodeContext()
-                })
-            });
-            
-            const codeResponse = await response.json();
-            
-            return {
-                content: codeResponse.code,
-                metadata: {
-                    type: 'code',
-                    language: codeResponse.language || 'javascript',
-                    explanation: codeResponse.explanation
-                }
-            };
-        }
-    }
-    
-    async function processImageRequest(message) {
-        // Check if it's an image processing request
-        if (message.startsWith('edit:') || message.startsWith('modify:')) {
-            // Handle image editing
-            return processImageEditRequest(message);
-        } else {
-            // Handle new image generation
-            const response = await fetch('/engine/y-npl/response-generator.js', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    type: 'image_generation',
-                    prompt: message,
-                    style: getPreferredImageStyle(),
-                    size: getPreferredImageSize()
-                })
-            });
-            
-            const imageResponse = await response.json();
-            
-            return {
-                content: imageResponse.imageUrl,
-                metadata: {
-                    type: 'image',
-                    prompt: message,
-                    model: imageResponse.model,
-                    generationTime: imageResponse.generationTime
-                }
-            };
-        }
-    }
-    
-    // ===== UTILITY FUNCTIONS =====
-    
-    function detectInputMode() {
-        const text = userInput.value.toLowerCase();
-        
-        // Code mode detection
-        const codeKeywords = ['code', 'program', 'function', 'loop', 'if statement', 'python', 'javascript'];
-        if (codeKeywords.some(keyword => text.includes(keyword))) {
-            currentMode = 'code';
-            return;
-        }
-        
-        // Image mode detection
-        const imageKeywords = ['image', 'picture', 'photo', 'generate', 'draw', 'create'];
-        if (imageKeywords.some(keyword => text.includes(keyword))) {
-            currentMode = 'image';
-            return;
-        }
-        
-        // Default to text mode
-        currentMode = 'general';
-    }
-    
-    function detectProgrammingLanguage(code) {
-        // Simple language detection
-        if (code.includes('def ') && code.includes(':')) return 'python';
-        if (code.includes('function ') && (code.includes('{') || code.includes('=>'))) return 'javascript';
-        if (code.includes('<?php')) return 'php';
-        if (code.includes('<html>') || code.includes('<div>')) return 'html';
-        if (code.includes('SELECT ') || code.includes('FROM ')) return 'sql';
-        return 'text';
-    }
-    
-    function getCodeContext() {
-        // Get relevant code from conversation history
-        return conversationHistory
-            .filter(msg => msg.metadata.type === 'code')
-            .map(msg => msg.content)
-            .join('\n\n');
-    }
-    
-    function getPreferredImageStyle() {
-        // Get from user preferences
-        return localStorage.getItem('imageStylePreference') || 'digital-art';
-    }
-    
-    function getPreferredImageSize() {
-        // Get from user preferences
-        return localStorage.getItem('imageSizePreference') || '1024x1024';
-    }
-    
-    function showTypingIndicator() {
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'message ai-message typing-indicator';
-        typingDiv.id = 'typingIndicator';
-        
-        const avatarDiv = document.createElement('div');
-        avatarDiv.className = 'message-avatar';
-        const logoImg = document.createElement('img');
-        logoImg.src = './assets/images/logo.png';
-        logoImg.alt = 'WAYNE AI';
-        avatarDiv.appendChild(logoImg);
-        
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        
-        const dots = document.createElement('div');
-        dots.className = 'typing-dots';
-        dots.innerHTML = '<span></span><span></span><span></span>';
-        
-        contentDiv.appendChild(dots);
-        typingDiv.appendChild(avatarDiv);
-        typingDiv.appendChild(contentDiv);
-        
-        chatContainer.appendChild(typingDiv);
-        typingDiv.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    function hideTypingIndicator() {
-        const indicator = document.getElementById('typingIndicator');
-        if (indicator) {
-            indicator.remove();
-        }
-    }
-    
-    function saveConversation() {
-        // Save only the last 20 messages to prevent excessive storage
-        const recentHistory = conversationHistory.slice(-20);
-        localStorage.setItem('wayneConversationHistory', JSON.stringify(recentHistory));
-    }
-    
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            showToast('Copied to clipboard!');
-        }).catch(err => {
-            console.error('Failed to copy:', err);
-        });
-    }
-    
-    function showToast(message) {
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        
+        // Simulate AI response
         setTimeout(() => {
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, 2000);
-        }, 100);
+            const aiResponse = generateAIResponse(message);
+            addMessageToChat('ai', aiResponse);
+        }, 1000);
     }
-    
-    // ===== FILE HANDLING =====
-    
-    function handleFileUpload(e) {
-        const files = e.target.files;
-        if (!files.length) return;
+}
+
+function sendImageMessage() {
+    if (uploadedImage) {
+        addImageMessageToChat('user', uploadedImage);
+        imagePreviewModal.style.display = 'none';
+        uploadedImage = null;
         
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            
-            if (file.type.startsWith('image/')) {
-                processImageUpload(file);
-            } else if (file.type === 'application/pdf') {
-                processPDFUpload(file);
-            } else if (file.type.startsWith('text/') || 
-                      file.name.endsWith('.txt') || 
-                      file.name.endsWith('.md')) {
-                processTextUpload(file);
-            } else {
-                addMessageToChat('user', `Uploaded file: ${file.name}`, {
-                    type: 'file',
-                    fileType: file.type
-                });
-                
-                // Inform AI about the upload
-                setTimeout(() => {
-                    addMessageToChat('ai', `I've noted your file upload (${file.name}). How would you like me to process this ${file.type} file?`, {
-                        type: 'text'
-                    });
-                }, 500);
-            }
-        }
-        
-        // Reset file input
-        e.target.value = '';
-    }
-    
-    async function processImageUpload(file) {
-        // Display the image in chat
-        addMessageToChat('user', `Image upload: ${file.name}`, {
-            type: 'image',
-            content: file
-        });
-        
-        // Prepare for potential image processing
+        // Simulate AI response to image
         setTimeout(() => {
-            addMessageToChat('ai', "I've received your image. Would you like me to analyze, edit, or generate something similar?", {
-                type: 'text',
-                options: ['Analyze', 'Edit', 'Generate similar']
-            });
-        }, 500);
+            const aiResponse = "This is an interesting image. I can analyze it for you if you enable image processing in settings.";
+            addMessageToChat('ai', aiResponse);
+        }, 1500);
+    }
+}
+
+function addMessageToChat(sender, message) {
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${sender}`;
+    
+    const avatar = sender === 'user' 
+        ? '<div class="avatar"><i class="fas fa-user"></i></div>' 
+        : '<div class="avatar"><img src="../assets/images/logo.png" alt="AI"></div>';
+    
+    messageElement.innerHTML = `
+        ${avatar}
+        <div class="message-content">
+            <div class="message-text">${message}</div>
+            <div class="message-time">${getCurrentTime()}</div>
+        </div>
+    `;
+    
+    chatContainer.appendChild(messageElement);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function addImageMessageToChat(sender, imageData) {
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${sender}`;
+    
+    const avatar = sender === 'user' 
+        ? '<div class="avatar"><i class="fas fa-user"></i></div>' 
+        : '<div class="avatar"><img src="../assets/images/logo.png" alt="AI"></div>';
+    
+    messageElement.innerHTML = `
+        ${avatar}
+        <div class="message-content">
+            <div class="message-image">
+                <img src="${imageData}" alt="Uploaded image">
+            </div>
+            <div class="message-time">${getCurrentTime()}</div>
+        </div>
+    `;
+    
+    chatContainer.appendChild(messageElement);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// Image handling
+function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            uploadedImage = event.target.result;
+            previewImage.src = uploadedImage;
+            imagePreviewModal.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Settings functions
+function openSettings() {
+    settingsPanel.style.display = 'block';
+    closeMenu();
+}
+
+function closeSettingsPanel() {
+    settingsPanel.style.display = 'none';
+    saveSettings();
+}
+
+function changeTheme() {
+    document.body.className = `${themeSelect.value}-theme`;
+}
+
+function updateFontSize() {
+    document.documentElement.style.setProperty('--base-font-size', `${fontSize.value}px`);
+}
+
+function toggleAnimations() {
+    document.body.classList.toggle('animations-disabled', !animationsToggle.checked);
+}
+
+function toggleNotifications() {
+    // Implementation would depend on Notification API
+    console.log('Notifications toggled:', notificationToggle.checked);
+}
+
+function loadSettings() {
+    const settings = JSON.parse(localStorage.getItem('wayneAISettings')) || {};
+    
+    if (settings.theme) {
+        themeSelect.value = settings.theme;
+        changeTheme();
     }
     
-    // ===== VOICE INPUT =====
+    if (settings.fontSize) {
+        fontSize.value = settings.fontSize;
+        updateFontSize();
+    }
     
-    function handleVoiceInput() {
-        if (!('webkitSpeechRecognition' in window)) {
-            addMessageToChat('ai', "Your browser doesn't support speech recognition. Please try Chrome or Edge.", {
-                type: 'text'
-            });
-            return;
+    if (settings.animations !== undefined) {
+        animationsToggle.checked = settings.animations;
+        toggleAnimations();
+    }
+    
+    if (settings.notifications !== undefined) {
+        notificationToggle.checked = settings.notifications;
+    }
+}
+
+function saveSettings() {
+    const settings = {
+        theme: themeSelect.value,
+        fontSize: fontSize.value,
+        animations: animationsToggle.checked,
+        notifications: notificationToggle.checked
+    };
+    
+    localStorage.setItem('wayneAISettings', JSON.stringify(settings));
+}
+
+// Utility functions
+function generateChatId() {
+    return 'chat-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+function getCurrentTime() {
+    const now = new Date();
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function generateAIResponse(message) {
+    // This would be replaced with actual AI engine calls
+    const responses = [
+        "I understand you're asking about: " + message,
+        "That's an interesting question. Let me think about " + message,
+        "Here's what I found about " + message + ": ...",
+        "I can help with that. " + message + " is related to...",
+        "Thanks for your message. Let me analyze " + message
+    ];
+    
+    return responses[Math.floor(Math.random() * responses.length)];
+}
+
+function checkMobileView() {
+    if (window.innerWidth <= 768) {
+        document.body.classList.add('mobile-view');
+        if (isMenuOpen) {
+            mainContent.classList.add('menu-open');
         }
-        
-        const recognition = new webkitSpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        
-        recognition.onstart = () => {
-            voiceButton.classList.add('recording');
-            showToast("Listening... Speak now");
-        };
-        
-        recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            userInput.value = transcript;
-            voiceButton.classList.remove('recording');
-        };
-        
-        recognition.onerror = (event) => {
-            console.error('Speech recognition error', event.error);
-            voiceButton.classList.remove('recording');
-            showToast("Error: " + event.error);
-        };
-        
-        recognition.onend = () => {
-            voiceButton.classList.remove('recording');
-        };
-        
-        recognition.start();
+    } else {
+        document.body.classList.remove('mobile-view');
+        mainContent.classList.remove('menu-open');
     }
-    
-    // ===== RESPONSE RATING =====
-    
-    function rateResponse(messageId, rating) {
-        const messageIndex = conversationHistory.findIndex(msg => msg.id === messageId);
-        if (messageIndex === -1) return;
-        
-        conversationHistory[messageIndex].metadata.rating = rating;
-        saveConversation();
-        
-        // Send feedback to server
-        fetch('/api/feedback', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                messageId,
-                rating,
-                conversationId: Date.now() // Simple ID for example
-            })
-        });
-        
-        showToast(`Feedback submitted: ${rating}`);
-    }
-});
+}
+
+// Initialize the app when DOM is loaded
+document.addEventListener('DOMContentLoaded', init);
