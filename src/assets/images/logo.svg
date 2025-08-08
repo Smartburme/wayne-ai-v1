@@ -1,28 +1,53 @@
-<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- Background Circle -->
-    <circle cx="100" cy="100" r="90" fill="#2563EB" fill-opacity="0.1"/>
-    
-    <!-- Abstract W Shape -->
-    <path d="M60 140L100 60L140 140L160 100L180 160" 
-          stroke="#2563EB" 
+<svg width="400" height="200" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Gradient Background -->
+    <defs>
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3B82F6"/>
+            <stop offset="100%" stop-color="#2563EB"/>
+        </linearGradient>
+    </defs>
+
+    <!-- W -->
+    <path d="M40 150L70 50L100 120L130 50L160 150" 
+          stroke="url(#gradient)" 
           stroke-width="12" 
-          stroke-linecap="round" 
-          stroke-linejoin="round"/>
-    
-    <!-- AI Indicator -->
-    <circle cx="100" cy="100" r="24" fill="#2563EB"/>
-    <path d="M90 90L110 90L100 110L90 90Z" fill="white"/>
-    <path d="M100 110L110 90L115 95L100 110Z" fill="white" fill-opacity="0.7"/>
-    
-    <!-- Pulsing Animation (optional) -->
-    <style>
-        circle[fill="#2563EB"] {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-    </style>
+          stroke-linecap="round"/>
+
+    <!-- A -->
+    <path d="M180 150V50M180 50L210 150M210 150L240 50M240 50V150" 
+          stroke="url(#gradient)" 
+          stroke-width="12" 
+          stroke-linecap="round"/>
+
+    <!-- Y -->
+    <path d="M260 50L290 100L290 150" 
+          stroke="url(#gradient)" 
+          stroke-width="12" 
+          stroke-linecap="round"/>
+    <path d="M320 50L290 100" 
+          stroke="url(#gradient)" 
+          stroke-width="12" 
+          stroke-linecap="round"/>
+
+    <!-- N -->
+    <path d="M340 150V50M340 50L370 150M370 150V50" 
+          stroke="url(#gradient)" 
+          stroke-width="12" 
+          stroke-linecap="round"/>
+
+    <!-- E -->
+    <path d="M390 150V50M390 50H410M390 100H410M390 150H410" 
+          stroke="url(#gradient)" 
+          stroke-width="12" 
+          stroke-linecap="round"/>
+
+    <!-- Glow Effect -->
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="5" result="blur"/>
+        <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- AI Badge -->
+    <circle cx="350" cy="30" r="20" fill="#2563EB" filter="url(#glow)"/>
+    <path d="M340 25L350 40L360 25L340 25Z" fill="white"/>
 </svg>
