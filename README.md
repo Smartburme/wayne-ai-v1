@@ -1,5 +1,4 @@
- # Wayne Ai Vi
- # Ai Power Website 
+# Ai Power Website 
 
 ```markdown
 # Wayne AI - Myanmar's Intelligent Assistant
