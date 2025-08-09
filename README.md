@@ -1,6 +1,4 @@
-# Ai Power Website 
 
-```markdown
 # Wayne AI - Myanmar's Intelligent Assistant
 
 <div align="center">
